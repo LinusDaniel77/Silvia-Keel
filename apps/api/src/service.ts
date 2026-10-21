@@ -544,3 +544,31 @@ export async function exportLabels(tx: Db) {
   }
   return items;
 }
+
+/**
+ * Outlook add-in check: analyzes one message on demand and stores nothing. The employee decides
+ * whether to report it (which goes through ingestArtifact).
+ */
+export async function checkMessage(tx: Db, artifact: NewArtifact, action: Action, deps: CheckDeps) {
+  const orgDomains =
+    (await tx.query<{ org_domains: string[] }>("SELECT org_domains FROM tenants")).rows[0]
+      ?.org_domains ?? [];
+  const analysis = await analyze(
+    {
+      id: "outlook-check",
+      action,
+      artifacts: [{ ...artifact, id: "message" }],
+      context: { orgDomains },
+    },
+    deps,
+  );
+  return {
+    decision: analysis.decision,
+    highRiskAction: analysis.highRiskAction,
+    criticalCombination: analysis.criticalCombination,
+    explanations: analysis.explanations,
+    tactics: analysis.hits
+      .filter((h) => h.confidence >= deps.library.manifest.fire_threshold)
+      .map((h) => ({ id: h.tacticId, confidence: h.confidence, evidence: h.evidence })),
+  };
+}

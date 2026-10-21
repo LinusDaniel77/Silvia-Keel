@@ -26,6 +26,7 @@ trail.
 | `POST /v1/requests/:id/review`        | `{ outcome }`. After-the-fact label, mainly for shadow mode. It doesn't hold or release anything. Needs `x-shield-actor`.                                                                                                                                                                                  |
 | `GET /v1/requests`                    | `?decision=&status=&mode=&limit=&before=`. Newest first, with the latest decision, tactics, label and verification.                                                                                                                                                                                        |
 | `GET /v1/reports/summary`             | `?days=30`. Per workflow: checks, decisions, would-hold and held counts, and labelled pause precision, false-alarm rate and catch rate (with Wilson 95% CIs). Also top tactics, the catch log and the median time to verify.                                                                               |
+| `POST /v1/check-message`              | `{ artifact, action? }`. A stateless check for the Outlook add-in; it stores nothing. See [`outlook-addin.md`](outlook-addin.md).                                                                                                                                                                          |
 
 ## How a check works
 

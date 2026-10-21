@@ -19,6 +19,7 @@ import {
   NotFound,
   overrideVerification,
   reviewRequest,
+  checkMessage,
   setWorkflowMode,
   upsertContacts,
   type NewArtifact,
@@ -96,6 +97,50 @@ const ListQuery = z.object({
   limit: z.coerce.number().int().min(1).max(200).default(50),
   before: z.string().datetime({ offset: true }).optional(),
 });
+const CheckMessageBody = z.object({
+  artifact: ArtifactSchema.omit({ id: true }),
+  action: ActionSchema.default({ kind: "none" }),
+});
+
+/** Outlook add-in: static files from an allowlist; Office.js is the one external script. */
+const ADDIN_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../public/addin");
+const ADDIN_FILES: Record<string, [string, string]> = {
+  "/addin/taskpane.html": ["taskpane.html", "text/html; charset=utf-8"],
+  "/addin/taskpane.js": ["taskpane.js", "text/javascript; charset=utf-8"],
+  "/addin/styles.css": ["styles.css", "text/css; charset=utf-8"],
+  "/addin/icon-16.png": ["icon-16.png", "image/png"],
+  "/addin/icon-32.png": ["icon-32.png", "image/png"],
+  "/addin/icon-64.png": ["icon-64.png", "image/png"],
+  "/addin/icon-80.png": ["icon-80.png", "image/png"],
+  "/addin/icon-128.png": ["icon-128.png", "image/png"],
+};
+const ADDIN_HEADERS = {
+  "content-security-policy": [
+    "default-src 'self'",
+    "script-src 'self' https://appsforoffice.microsoft.com",
+    "style-src 'self'",
+    "connect-src 'self'",
+    "img-src 'self'",
+    // Outlook on the web hosts the pane in an iframe.
+    "frame-ancestors 'self' https://outlook.office.com https://outlook.office365.com https://outlook.live.com https://*.officeapps.live.com",
+  ].join("; "),
+  "x-content-type-options": "nosniff",
+  "referrer-policy": "no-referrer",
+  "cache-control": "no-store",
+};
+
+/** The add-in manifest for this server's public origin (SHIELD_PUBLIC_URL, else the request's). */
+export function renderManifest(baseUrl: string): string {
+  const base = new URL(baseUrl);
+  if (base.protocol !== "https:" && base.hostname !== "localhost" && base.hostname !== "127.0.0.1")
+    throw new HttpError(400, "the add-in needs an https public URL (set SHIELD_PUBLIC_URL)");
+  const origin = base.origin.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
+  return readFileSync(path.join(ADDIN_DIR, "manifest.template.xml"), "utf8").replaceAll(
+    "{{BASE}}",
+    origin,
+  );
+}
+
 const SummaryQuery = z.object({ days: z.coerce.number().int().min(1).max(365).default(30) });
 
 /** The console: static files from an allowlist, never a path lookup. */
@@ -247,6 +292,30 @@ export function buildApp({ db, library, provider, demo = false }: AppDeps): Fast
         .type(type)
         .send(readFileSync(path.join(CONSOLE_DIR, file), "utf8")),
     );
+
+  for (const [url, [file, type]] of Object.entries(ADDIN_FILES))
+    app.get(url, async (_req, reply) =>
+      reply
+        .headers(ADDIN_HEADERS)
+        .type(type)
+        .send(
+          readFileSync(path.join(ADDIN_DIR, file), type.startsWith("image/") ? undefined : "utf8"),
+        ),
+    );
+
+  app.get("/addin/manifest.xml", async (req, reply) => {
+    const base =
+      process.env.SHIELD_PUBLIC_URL ?? `${req.protocol}://${req.headers.host ?? "localhost"}`;
+    return reply
+      .type("application/xml; charset=utf-8")
+      .header("cache-control", "no-store")
+      .send(renderManifest(base));
+  });
+
+  app.post("/v1/check-message", async (req) => {
+    const body = parse(CheckMessageBody, req.body);
+    return scoped(req, (tx) => checkMessage(tx, body.artifact, body.action, { library, provider }));
+  });
 
   app.get("/v1/requests", async (req) => {
     const q = parse(ListQuery, req.query);

@@ -365,7 +365,17 @@ Built:
 - No per-person views.
 - `--seed-demo` fills it for partner walk-throughs.
 
-The paid eval is deliberately deferred for budget. Next free steps: native connectors once design partners pick their systems, and the M4 console.
+**Pilot-ready (built):**
+
+- Docker Compose with Postgres 16 and `pnpm admin` (tenants, key rotation, vendor-contact CSV
+  import). See `docs/pilot.md`.
+- A real-Postgres test path, also run in CI.
+- The Outlook "Check request" add-in. See `docs/outlook-addin.md`. It has not yet been tested
+  inside a real Outlook client.
+
+The paid eval is blocked until 2026-11-01 by the Anthropic account's spending limit (verified with
+one request). When it reopens, run the cheap Haiku batch in `docs/eval-methodology.md` (about
+$0.05). It was deliberately deferred for budget anyway. Next free steps: native connectors once design partners pick their systems, and the M4 console.
 
 Next:
 

@@ -15,6 +15,7 @@ export default tseslint.config(
         location: "readonly",
         sessionStorage: "readonly",
         URLSearchParams: "readonly",
+        Office: "readonly",
       },
     },
   },

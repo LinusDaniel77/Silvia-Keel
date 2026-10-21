@@ -75,7 +75,8 @@ bank change or a reset.
 
 See [`docs/api.md`](docs/api.md). To run a shadow-mode pilot on a partner's own infrastructure
 (Docker Compose with Postgres 16, `pnpm admin` for tenants, keys and vendor-contact import),
-see [`docs/pilot.md`](docs/pilot.md).
+see [`docs/pilot.md`](docs/pilot.md). For an Outlook "Check request" button that lets employees
+check an email themselves, see [`docs/outlook-addin.md`](docs/outlook-addin.md).
 
 ## How a request is judged
 
@@ -115,6 +116,7 @@ artifacts (email, chat, call note, approval event) + the action they push for
 | Synthetic seed corpus (302 items) | 98%             | 55%              | 4%                                |
 
 The rules are precise but don't generalize to new wording; that's the LLM classifier's job. Its
-first measured run is deferred for budget. When it runs, it can be priced first for free and
+first measured run is blocked until 2026-11-01: the Anthropic account's own spending limit is
+reached, and the API refuses calls until then. When it runs, it can be priced first for free and
 capped, and the cheap first look is about $0.05 (see the eval methodology). See
 [`docs/eval-methodology.md`](docs/eval-methodology.md) for what these numbers can and cannot claim.
