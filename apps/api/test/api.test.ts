@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { createApiKey, createTenant, migrate, openPglite, type Db } from "@shield/db";
+import { createApiKey, createTenant, migrate, openTestDb, type Db } from "@shield/db";
 import { CorpusItemSchema } from "@shield/eval";
 import { loadLibrary } from "@shield/tactics";
 import type { FastifyInstance } from "fastify";
@@ -17,7 +17,7 @@ let keyA = "";
 let keyB = "";
 
 beforeAll(async () => {
-  db = await openPglite();
+  db = await openTestDb();
   await migrate(db);
   const a = await createTenant(db, { name: "Keelbridge", orgDomains: ["keelbridge.com"] });
   const b = await createTenant(db, { name: "Other" });

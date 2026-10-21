@@ -86,6 +86,7 @@ async function main() {
   console.log(
     `Manipulation Shield API on http://${host}:${port} (LLM ${llmOn ? "on" : "off: rules only"})`,
   );
+  console.log(`Console: http://${host === "0.0.0.0" ? "127.0.0.1" : host}:${port}/console`);
 }
 
 void main();

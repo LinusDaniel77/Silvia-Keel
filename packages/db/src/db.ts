@@ -30,8 +30,13 @@ export async function openPglite(dataDir?: string): Promise<Db> {
 }
 
 /** A real Postgres server through node-postgres. */
-export function openPostgres(connectionString: string): Db {
-  const pool = new pg.Pool({ connectionString });
+export function openPostgres(connectionString: string, opts: { schema?: string } = {}): Db {
+  if (opts.schema && !/^[a-z_][a-z0-9_]*$/.test(opts.schema))
+    throw new Error("invalid schema name");
+  const pool = new pg.Pool({
+    connectionString,
+    ...(opts.schema ? { options: `-c search_path=${opts.schema}` } : {}),
+  });
   const wrap = (c: pg.Pool | pg.PoolClient): Pick<Db, "query"> => ({
     query: async <T>(sql: string, params?: unknown[]) => ({
       rows: (await c.query(sql, params)).rows as T[],

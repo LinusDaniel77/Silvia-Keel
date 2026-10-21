@@ -29,3 +29,33 @@ jobs:
       - name: Publish eval report to the job summary
         if: always()
         run: test -f eval-report.md && cat eval-report.md >> "$GITHUB_STEP_SUMMARY" || true
+
+  postgres:
+    # The database and API tests again, on a real Postgres server as a non-superuser owner
+    # (the production setup), instead of in-process PGlite.
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres" --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      SHIELD_TEST_DATABASE_URL: postgres://shield_owner:shield@localhost:5432/shield
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Create a non-superuser owner and database
+        env:
+          PGPASSWORD: postgres
+        run: |
+          psql -h localhost -U postgres -v ON_ERROR_STOP=1 -c "CREATE USER shield_owner PASSWORD 'shield' CREATEROLE"
+          psql -h localhost -U postgres -v ON_ERROR_STOP=1 -c "CREATE DATABASE shield OWNER shield_owner"
+      - run: pnpm vitest run packages/db apps/api

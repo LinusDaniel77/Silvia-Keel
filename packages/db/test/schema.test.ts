@@ -5,7 +5,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import {
   createTenant,
   migrate,
-  openPglite,
+  openTestDb,
   purgeBodies,
   splitSql,
   withTenant,
@@ -16,7 +16,7 @@ const MIGRATIONS = path.resolve(path.dirname(fileURLToPath(import.meta.url)), ".
 let db: Db;
 
 beforeAll(async () => {
-  db = await openPglite();
+  db = await openTestDb();
   await migrate(db);
 });
 afterAll(() => db.close());
@@ -25,7 +25,11 @@ describe("migrations", () => {
   it("apply once and are idempotent", async () => {
     expect(await migrate(db)).toEqual([]);
     const { rows } = await db.query<{ name: string }>("SELECT name FROM schema_migrations");
-    expect(rows.map((r) => r.name)).toContain("001_init.sql");
+    expect(rows.map((r) => r.name)).toEqual([
+      "001_init.sql",
+      "002_review.sql",
+      "003_app_role_access.sql",
+    ]);
   });
 
   it("split SQL safely around $$ blocks, quotes and comments", () => {

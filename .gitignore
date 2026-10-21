@@ -6,3 +6,4 @@ eval-report.md
 .DS_Store
 copilot-data/*
 !copilot-data/README.md
+!.env.example

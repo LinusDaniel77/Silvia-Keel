@@ -50,3 +50,12 @@ export async function purgeBodies(db: Db, now = new Date()): Promise<number> {
   );
   return rows.length;
 }
+
+/** Revokes every active key of a tenant except `keep`. Returns how many were revoked. */
+export async function revokeOtherKeys(db: Db, tenantId: string, keep: string): Promise<number> {
+  const { rows } = await db.query<{ id: string }>(
+    "UPDATE api_keys SET revoked_at = now() WHERE tenant_id = $1 AND key_sha256 <> $2 AND revoked_at IS NULL RETURNING id",
+    [tenantId, sha256(keep)],
+  );
+  return rows.length;
+}

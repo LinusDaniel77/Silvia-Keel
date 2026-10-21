@@ -73,7 +73,9 @@ bank change or a reset.
   was wrong (with confidence intervals), and what it caught. They can review or verify requests
   and switch workflows to enforce.
 
-See [`docs/api.md`](docs/api.md).
+See [`docs/api.md`](docs/api.md). To run a shadow-mode pilot on a partner's own infrastructure
+(Docker Compose with Postgres 16, `pnpm admin` for tenants, keys and vendor-contact import),
+see [`docs/pilot.md`](docs/pilot.md).
 
 ## How a request is judged
 
