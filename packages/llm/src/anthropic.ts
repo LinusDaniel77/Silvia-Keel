@@ -10,22 +10,25 @@ import {
 export const DEFAULT_ANTHROPIC_MODEL = "claude-opus-5-5";
 
 /**
- * Project-specific key name. Claude Code cloud sessions reserve ANTHROPIC_API_KEY (and point
- * ANTHROPIC_BASE_URL at their own proxy), so a key stored under this name is used with the public
- * API base URL instead of whatever the environment's Anthropic variables say.
+ * Project-specific key names, in order of preference. Claude Code cloud sessions reserve
+ * ANTHROPIC_API_KEY (and point ANTHROPIC_BASE_URL at their own proxy), so a key stored under one of
+ * these names is used with the public API base URL instead of whatever the environment's Anthropic
+ * variables say.
  */
-export const SHIELD_API_KEY_ENV = "SHIELD_ANTHROPIC_API_KEY";
+export const PROJECT_API_KEY_ENVS = ["KEEL_ANTHROPIC_API_KEY", "SHIELD_ANTHROPIC_API_KEY"] as const;
 const PUBLIC_API_BASE_URL = "https://api.anthropic.com";
 
 type Env = Record<string, string | undefined>;
 
 export function hasAnthropicCredentials(env: Env = process.env): boolean {
-  return Boolean(env[SHIELD_API_KEY_ENV] || env.ANTHROPIC_API_KEY || env.ANTHROPIC_AUTH_TOKEN);
+  return Boolean(projectApiKey(env) || env.ANTHROPIC_API_KEY || env.ANTHROPIC_AUTH_TOKEN);
 }
 
-/** SHIELD_ANTHROPIC_API_KEY wins; otherwise the SDK's own env defaults apply. */
+const projectApiKey = (env: Env) => PROJECT_API_KEY_ENVS.map((name) => env[name]).find(Boolean);
+
+/** A project key name wins; otherwise the SDK's own env defaults apply. */
 export function createAnthropicClient(env: Env = process.env): Anthropic {
-  const apiKey = env[SHIELD_API_KEY_ENV];
+  const apiKey = projectApiKey(env);
   if (!apiKey) return new Anthropic();
   return new Anthropic({
     apiKey,

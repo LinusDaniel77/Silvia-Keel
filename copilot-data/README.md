@@ -24,6 +24,6 @@ The report puts Claude's read next to yours with a scoring table for each conver
 roadmap's rule: if it catches things you missed or matches your read faster, build. If not, the
 gaps show exactly what to fix.
 
-Needs `SHIELD_ANTHROPIC_API_KEY` (or `ANTHROPIC_API_KEY` outside Claude Code cloud sessions, which
+Needs `KEEL_ANTHROPIC_API_KEY` (or `SHIELD_ANTHROPIC_API_KEY`, or `ANTHROPIC_API_KEY` outside Claude Code cloud sessions, which
 reserve that name). The model defaults to `claude-opus-5-5` (override with `COPILOT_MODEL`).
 The text of each conversation is sent to Anthropic.

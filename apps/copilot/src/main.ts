@@ -25,7 +25,7 @@ async function main(): Promise<number> {
   }
   if (!hasAnthropicCredentials()) {
     console.error(
-      "No Anthropic credentials in this environment. Set SHIELD_ANTHROPIC_API_KEY (in a cloud session, add it to the environment settings under that name, since ANTHROPIC_API_KEY is reserved there, and start a new session).",
+      "No Anthropic credentials in this environment. Set KEEL_ANTHROPIC_API_KEY (in a cloud session, add it to the environment settings under that name, since ANTHROPIC_API_KEY is reserved there, and start a new session).",
     );
     return 1;
   }

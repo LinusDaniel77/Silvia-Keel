@@ -238,7 +238,7 @@ async function main() {
     console.log(
       provider
         ? `Claude classifier available (${provider.model}); pasted text is sent to Anthropic only when "Use Claude" is ticked.`
-        : "Rules only: no Anthropic credentials found (set SHIELD_ANTHROPIC_API_KEY or ANTHROPIC_API_KEY to enable Claude).",
+        : "Rules only: no Anthropic credentials found (set KEEL_ANTHROPIC_API_KEY or ANTHROPIC_API_KEY to enable Claude).",
     );
     if (host !== "127.0.0.1" && host !== "localhost")
       console.warn("Warning: listening beyond localhost. This demo has no authentication.");

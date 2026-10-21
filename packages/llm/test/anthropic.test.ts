@@ -76,8 +76,19 @@ describe("Anthropic credentials", () => {
     expect(client.baseURL).toBe("https://api.anthropic.com");
   });
 
+  it("prefers KEEL_ANTHROPIC_API_KEY over SHIELD_ANTHROPIC_API_KEY", () => {
+    const client = createAnthropicClient({
+      KEEL_ANTHROPIC_API_KEY: "sk-keel",
+      SHIELD_ANTHROPIC_API_KEY: "sk-shield",
+      ANTHROPIC_BASE_URL: "http://proxy.invalid",
+    });
+    expect(client.apiKey).toBe("sk-keel");
+    expect(client.baseURL).toBe("https://api.anthropic.com");
+  });
+
   it("detects any supported credential", () => {
     expect(hasAnthropicCredentials({})).toBe(false);
+    expect(hasAnthropicCredentials({ KEEL_ANTHROPIC_API_KEY: "k" })).toBe(true);
     expect(hasAnthropicCredentials({ SHIELD_ANTHROPIC_API_KEY: "k" })).toBe(true);
     expect(hasAnthropicCredentials({ ANTHROPIC_API_KEY: "k" })).toBe(true);
   });

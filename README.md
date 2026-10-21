@@ -23,7 +23,7 @@ pnpm test
 ```
 
 Add `--provider anthropic` to `analyze` or `eval` to run the Claude tactic classifier on top of the
-rules. It needs Anthropic credentials: `SHIELD_ANTHROPIC_API_KEY` (used against the public API;
+rules. It needs Anthropic credentials: `KEEL_ANTHROPIC_API_KEY` or `SHIELD_ANTHROPIC_API_KEY` (used against the public API;
 Claude Code cloud sessions reserve `ANTHROPIC_API_KEY`) or the SDK's usual `ANTHROPIC_API_KEY`. The
 model comes from `SHIELD_MODEL` and defaults to `claude-opus-5-5`. Do not send real partner data without zero-data-retention terms; see
 [`docs/data-handling.md`](docs/data-handling.md).
