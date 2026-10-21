@@ -14,7 +14,8 @@
 
 DO $$ BEGIN
   CREATE ROLE shield_app NOLOGIN;
-EXCEPTION WHEN duplicate_object THEN NULL;
+-- unique_violation: another database on the same cluster created it concurrently.
+EXCEPTION WHEN duplicate_object OR unique_violation THEN NULL;
 END $$;
 
 CREATE TABLE tenants (

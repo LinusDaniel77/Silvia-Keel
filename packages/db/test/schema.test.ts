@@ -19,7 +19,7 @@ beforeAll(async () => {
   db = await openTestDb();
   await migrate(db);
 });
-afterAll(() => db.close());
+afterAll(() => db?.close());
 
 describe("migrations", () => {
   it("apply once and are idempotent", async () => {

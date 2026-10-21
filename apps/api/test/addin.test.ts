@@ -22,9 +22,10 @@ beforeAll(async () => {
   );
   app = buildApp({ db, library: loadLibrary() });
 });
+// Optional chaining: if setup failed, report that failure, not a teardown TypeError.
 afterAll(async () => {
-  await app.close();
-  await db.close();
+  await app?.close();
+  await db?.close();
 });
 
 /** Tag balance for well-formedness: enough to catch a broken template, without an XML dependency. */

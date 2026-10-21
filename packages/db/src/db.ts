@@ -64,28 +64,36 @@ export function openPostgres(connectionString: string, opts: { schema?: string }
 }
 
 /** Applies migrations/*.sql in order, once each. */
+/** Any constant; identifies the migration lock among the database's advisory locks. */
+const MIGRATION_LOCK = 7_431_002_611;
+
+/**
+ * Applies migrations/*.sql in order, once each, in one transaction. An advisory lock serializes
+ * concurrent runs (two API replicas starting together, or parallel test files): roles are
+ * cluster-wide, so two unserialized runs race on CREATE ROLE even in different schemas.
+ */
 export async function migrate(db: Db): Promise<string[]> {
-  await db.query(
-    "CREATE TABLE IF NOT EXISTS schema_migrations (name text PRIMARY KEY, applied_at timestamptz NOT NULL DEFAULT now())",
-  );
-  const done = new Set(
-    (await db.query<{ name: string }>("SELECT name FROM schema_migrations")).rows.map(
-      (r) => r.name,
-    ),
-  );
-  const applied: string[] = [];
-  for (const file of readdirSync(MIGRATIONS_DIR)
-    .filter((f) => f.endsWith(".sql"))
-    .sort()) {
-    if (done.has(file)) continue;
-    const sql = readFileSync(path.join(MIGRATIONS_DIR, file), "utf8");
-    await db.transaction(async (tx) => {
-      await execScript(tx, sql);
+  return db.transaction(async (tx) => {
+    await tx.query("SELECT pg_advisory_xact_lock($1)", [MIGRATION_LOCK]);
+    await tx.query(
+      "CREATE TABLE IF NOT EXISTS schema_migrations (name text PRIMARY KEY, applied_at timestamptz NOT NULL DEFAULT now())",
+    );
+    const done = new Set(
+      (await tx.query<{ name: string }>("SELECT name FROM schema_migrations")).rows.map(
+        (r) => r.name,
+      ),
+    );
+    const applied: string[] = [];
+    for (const file of readdirSync(MIGRATIONS_DIR)
+      .filter((f) => f.endsWith(".sql"))
+      .sort()) {
+      if (done.has(file)) continue;
+      await execScript(tx, readFileSync(path.join(MIGRATIONS_DIR, file), "utf8"));
       await tx.query("INSERT INTO schema_migrations (name) VALUES ($1)", [file]);
-    });
-    applied.push(file);
-  }
-  return applied;
+      applied.push(file);
+    }
+    return applied;
+  });
 }
 
 /** Runs a multi-statement SQL script (no parameters) through the query interface. */

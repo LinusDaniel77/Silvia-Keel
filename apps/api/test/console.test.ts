@@ -68,9 +68,10 @@ beforeAll(async () => {
   await call("POST", `/v1/requests/${ids[2]}/review`, { outcome: "legitimate" });
   await call("POST", `/v1/requests/${calm}/review`, { outcome: "legitimate" });
 });
+// Optional chaining: if setup failed, report that failure, not a teardown TypeError.
 afterAll(async () => {
-  await app.close();
-  await db.close();
+  await app?.close();
+  await db?.close();
 });
 
 describe("console reports", () => {

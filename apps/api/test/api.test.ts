@@ -25,9 +25,10 @@ beforeAll(async () => {
   keyB = await createApiKey(db, b);
   app = buildApp({ db, library: loadLibrary() });
 });
+// Optional chaining: if setup failed, report that failure, not a teardown TypeError.
 afterAll(async () => {
-  await app.close();
-  await db.close();
+  await app?.close();
+  await db?.close();
 });
 
 type Json = Record<string, unknown>;
