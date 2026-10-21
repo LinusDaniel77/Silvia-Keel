@@ -4,7 +4,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
 import { analyze, parseEml } from "@shield/engine";
-import { AnthropicProvider, type LlmProvider } from "@shield/llm";
+import { AnthropicProvider, hasAnthropicCredentials, type LlmProvider } from "@shield/llm";
 import { ActionKindSchema, ShieldRequestSchema, type ShieldRequestInput } from "@shield/shared";
 import { loadLibrary, type TacticLibrary } from "@shield/tactics";
 import { z } from "zod";
@@ -220,9 +220,6 @@ export function createDemoServer({ library, provider }: DemoOptions): http.Serve
   });
 }
 
-const hasCredentials = () =>
-  Boolean(process.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_AUTH_TOKEN);
-
 async function main() {
   const { values } = parseArgs({
     options: {
@@ -233,14 +230,15 @@ async function main() {
   });
   const host = values.host ?? "127.0.0.1";
   const port = Number(values.port ?? 4173);
-  const provider = !values["rules-only"] && hasCredentials() ? new AnthropicProvider() : undefined;
+  const provider =
+    !values["rules-only"] && hasAnthropicCredentials() ? new AnthropicProvider() : undefined;
   const server = createDemoServer({ library: loadLibrary(), provider });
   server.listen(port, host, () => {
     console.log(`Manipulation Shield demo on http://${host}:${port}`);
     console.log(
       provider
         ? `Claude classifier available (${provider.model}); pasted text is sent to Anthropic only when "Use Claude" is ticked.`
-        : "Rules only: no Anthropic credentials found (set ANTHROPIC_API_KEY to enable Claude).",
+        : "Rules only: no Anthropic credentials found (set SHIELD_ANTHROPIC_API_KEY or ANTHROPIC_API_KEY to enable Claude).",
     );
     if (host !== "127.0.0.1" && host !== "localhost")
       console.warn("Warning: listening beyond localhost. This demo has no authentication.");

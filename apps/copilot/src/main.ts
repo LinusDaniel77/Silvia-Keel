@@ -1,7 +1,7 @@
 import { writeFileSync } from "node:fs";
 import path from "node:path";
 import { parseArgs } from "node:util";
-import Anthropic from "@anthropic-ai/sdk";
+import { createAnthropicClient, hasAnthropicCredentials } from "@shield/llm";
 import { loadLibrary } from "@shield/tactics";
 import {
   DEFAULT_COPILOT_MODEL,
@@ -23,9 +23,9 @@ async function main(): Promise<number> {
     );
     return 1;
   }
-  if (!process.env.ANTHROPIC_API_KEY && !process.env.ANTHROPIC_AUTH_TOKEN) {
+  if (!hasAnthropicCredentials()) {
     console.error(
-      "No Anthropic credentials in this environment. Set ANTHROPIC_API_KEY (in a cloud session, add it to the environment settings and start a new session).",
+      "No Anthropic credentials in this environment. Set SHIELD_ANTHROPIC_API_KEY (in a cloud session, add it to the environment settings under that name, since ANTHROPIC_API_KEY is reserved there, and start a new session).",
     );
     return 1;
   }
@@ -36,7 +36,7 @@ async function main(): Promise<number> {
     );
 
   const library = loadLibrary();
-  const client = new Anthropic();
+  const client = createAnthropicClient();
   const model = process.env.COPILOT_MODEL ?? DEFAULT_COPILOT_MODEL;
   const results = [];
   for (const conversation of conversations) {

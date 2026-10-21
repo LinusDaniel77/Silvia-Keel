@@ -9,6 +9,31 @@ import {
 
 export const DEFAULT_ANTHROPIC_MODEL = "claude-opus-5-5";
 
+/**
+ * Project-specific key name. Claude Code cloud sessions reserve ANTHROPIC_API_KEY (and point
+ * ANTHROPIC_BASE_URL at their own proxy), so a key stored under this name is used with the public
+ * API base URL instead of whatever the environment's Anthropic variables say.
+ */
+export const SHIELD_API_KEY_ENV = "SHIELD_ANTHROPIC_API_KEY";
+const PUBLIC_API_BASE_URL = "https://api.anthropic.com";
+
+type Env = Record<string, string | undefined>;
+
+export function hasAnthropicCredentials(env: Env = process.env): boolean {
+  return Boolean(env[SHIELD_API_KEY_ENV] || env.ANTHROPIC_API_KEY || env.ANTHROPIC_AUTH_TOKEN);
+}
+
+/** SHIELD_ANTHROPIC_API_KEY wins; otherwise the SDK's own env defaults apply. */
+export function createAnthropicClient(env: Env = process.env): Anthropic {
+  const apiKey = env[SHIELD_API_KEY_ENV];
+  if (!apiKey) return new Anthropic();
+  return new Anthropic({
+    apiKey,
+    authToken: null,
+    baseURL: env.SHIELD_ANTHROPIC_BASE_URL ?? PUBLIC_API_BASE_URL,
+  });
+}
+
 export interface AnthropicProviderOptions {
   model?: string;
   effort?: "low" | "medium" | "high" | "xhigh" | "max";
@@ -28,7 +53,7 @@ export class AnthropicProvider implements LlmProvider {
   constructor(opts: AnthropicProviderOptions = {}) {
     this.model = opts.model ?? process.env.SHIELD_MODEL ?? DEFAULT_ANTHROPIC_MODEL;
     this.effort = opts.effort ?? "medium";
-    this.client = opts.client ?? new Anthropic();
+    this.client = opts.client ?? createAnthropicClient();
   }
 
   async classify(prompt: TacticPrompt): Promise<ProviderResult> {

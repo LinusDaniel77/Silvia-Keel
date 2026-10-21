@@ -1,6 +1,6 @@
 import type Anthropic from "@anthropic-ai/sdk";
 import { describe, expect, it } from "vitest";
-import { AnthropicProvider } from "../src/index.ts";
+import { AnthropicProvider, createAnthropicClient, hasAnthropicCredentials } from "../src/index.ts";
 
 function stubClient(response: unknown) {
   const calls: Record<string, unknown>[] = [];
@@ -61,5 +61,24 @@ describe("AnthropicProvider", () => {
     const { client } = stubClient({ stop_reason: "max_tokens", parsed_output: null });
     const r = await new AnthropicProvider({ client }).classify(prompt);
     expect(r.status).toBe("error");
+  });
+});
+
+describe("Anthropic credentials", () => {
+  it("prefers SHIELD_ANTHROPIC_API_KEY and ignores the environment's base URL and auth token", () => {
+    const client = createAnthropicClient({
+      SHIELD_ANTHROPIC_API_KEY: "sk-shield",
+      ANTHROPIC_BASE_URL: "http://proxy.invalid",
+      ANTHROPIC_AUTH_TOKEN: "session-token",
+    });
+    expect(client.apiKey).toBe("sk-shield");
+    expect(client.authToken).toBeNull();
+    expect(client.baseURL).toBe("https://api.anthropic.com");
+  });
+
+  it("detects any supported credential", () => {
+    expect(hasAnthropicCredentials({})).toBe(false);
+    expect(hasAnthropicCredentials({ SHIELD_ANTHROPIC_API_KEY: "k" })).toBe(true);
+    expect(hasAnthropicCredentials({ ANTHROPIC_API_KEY: "k" })).toBe(true);
   });
 });

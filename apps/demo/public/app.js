@@ -142,7 +142,7 @@ async function init() {
     $("claudeNote").textContent = "· sends the text to Anthropic";
   } else {
     $("useClaude").disabled = true;
-    $("claudeNote").textContent = "· unavailable: set ANTHROPIC_API_KEY and restart";
+    $("claudeNote").textContent = "· unavailable: set SHIELD_ANTHROPIC_API_KEY and restart";
   }
   $("samples").innerHTML = "";
   for (const s of config.samples) {
