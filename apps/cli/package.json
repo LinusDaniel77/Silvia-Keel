@@ -1,0 +1,16 @@
+{
+  "name": "@shield/cli",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@shield/engine": "workspace:*",
+    "@shield/eval": "workspace:*",
+    "@shield/llm": "workspace:*",
+    "@shield/shared": "workspace:*",
+    "@shield/tactics": "workspace:*"
+  }
+}

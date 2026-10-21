@@ -1,0 +1,36 @@
+id: secrecy.confidential
+name: Secrecy
+family: secrecy
+stages: [enterprise, elicitation, copilot]
+version: 1.0.0
+status: active
+severity: high
+description: >-
+  A request to keep the action from colleagues who would normally see it. Secrecy removes the
+  second pair of eyes that catches social engineering.
+explanation: 'This request asks you to keep it quiet ("{evidence}"), which removes the colleagues who would normally check it.'
+indicators:
+  lexical:
+    - keep this between us
+    - keep this confidential
+    - confidential acquisition
+    - don't loop in
+    - do not loop in
+    - don't tell anyone
+    - do not discuss
+    - don't mention this
+    - don't cc
+    - keep it quiet
+    - I need your discretion
+  patterns:
+    - "(don'?t|do not) (loop|copy|cc|involve|tell|inform) (in )?(finance|anyone|the team|accounting|legal|your manager)"
+examples:
+  positive:
+    - "Confidential acquisition, don't loop in finance yet."
+    - "Keep this between us until the announcement, I need your discretion."
+  hard_negative:
+    - "Attached is the confidential salary band document for HR review, shared with the comp committee."
+    - "This deck is marked confidential; please don't forward it outside the company."
+references:
+  - "FBI IC3 PSA I-091024-PSA: Business Email Compromise"
+author: seed-library

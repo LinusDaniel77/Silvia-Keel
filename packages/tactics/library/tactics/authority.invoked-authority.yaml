@@ -1,0 +1,35 @@
+id: authority.invoked-authority
+name: Borrowed authority
+family: authority
+stages: [enterprise]
+version: 1.0.0
+status: active
+severity: medium
+description: >-
+  An outside authority such as a lawyer, regulator, auditor, bank or government agency is
+  invoked to make an unusual request look mandatory.
+explanation: 'This request borrows outside authority ("{evidence}") to make an unusual ask feel mandatory.'
+indicators:
+  lexical:
+    - our attorney
+    - our lawyer
+    - legal counsel has
+    - the regulator
+    - regulatory requirement
+    - the auditors require
+    - audit requirement
+    - IRS
+    - court order
+    - compliance requires
+  patterns:
+    - "(attorney|lawyer|counsel) (will|is going to) (contact|call|email) you"
+examples:
+  positive:
+    - "Our attorney will contact you shortly; the regulator requires the transfer today."
+    - "Compliance requires you to update the beneficiary before the audit."
+  hard_negative:
+    - "Outside counsel reviewed the MSA; redlines are in the shared folder."
+    - "The auditors will be onsite next week; please have the AP ledger ready."
+references:
+  - "FBI IC3: Attorney impersonation in BEC schemes"
+author: seed-library

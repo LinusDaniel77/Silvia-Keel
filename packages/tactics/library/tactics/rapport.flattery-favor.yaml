@@ -1,0 +1,33 @@
+id: rapport.flattery-favor
+name: Flattery before an ask
+family: rapport
+stages: [enterprise, elicitation, copilot]
+version: 1.0.0
+status: active
+severity: low
+description: >-
+  Praise or special trust is used to set up a request: "you're the only one I can count on".
+  It is weak on its own and counts only when it stacks with other pressure.
+explanation: 'This request uses flattery or special trust ("{evidence}") to set up the ask.'
+indicators:
+  lexical:
+    - you're the only one I can trust
+    - you are the only one I can trust
+    - you're the only one I can count on
+    - I knew I could count on you
+    - I know I can count on you
+    - I trust you with this
+    - can you do me a favor
+    - can you do me a quick favor
+    - I need a favor
+    - need a quick favor
+examples:
+  positive:
+    - "You're the only one I can trust with this, can you do me a quick favor?"
+    - "I knew I could count on you. Need a quick favor before my meeting."
+  hard_negative:
+    - "Thanks for closing the books early last month, the whole team noticed."
+    - "Great work on the audit prep; please keep using the standard checklist."
+references:
+  - "NCSC: Think before you link (approach techniques)"
+author: seed-library

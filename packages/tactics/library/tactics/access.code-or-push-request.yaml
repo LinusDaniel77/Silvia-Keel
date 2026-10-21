@@ -1,0 +1,34 @@
+id: access.code-or-push-request
+name: Code or push request
+family: access
+stages: [enterprise]
+version: 1.0.0
+status: active
+severity: critical
+description: >-
+  A request to read back a one-time code or approve an MFA push. No legitimate IT or bank
+  process asks for this.
+explanation: 'This request asks you to share a one-time code or approve a login prompt ("{evidence}"). Legitimate teams never ask for this.'
+indicators:
+  lexical:
+    - read me the code
+    - send me the code
+    - share the code
+    - the code you just received
+    - the code we just sent
+    - approve the prompt
+    - approve the push
+    - accept the notification
+    - share your code with me
+  patterns:
+    - "(read|send|tell|give|forward) (me|us) (the )?(\\d-digit )?(code|OTP|passcode|pin)"
+examples:
+  positive:
+    - "IT here, you'll get a prompt in a second, please approve the push so we can finish the upgrade."
+    - "Read me the code you just received so I can verify your account."
+  hard_negative:
+    - "Never share your verification code with anyone, including the IT team."
+    - "Your one-time code for logging into the portal is 482913. It expires in 10 minutes."
+references:
+  - "CISA: MFA fatigue and push-bombing"
+author: seed-library

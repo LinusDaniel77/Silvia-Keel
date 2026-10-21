@@ -1,0 +1,28 @@
+id: identity.sender-mismatch
+name: Sender mismatch
+family: identity
+stages: [enterprise]
+version: 1.0.0
+status: active
+severity: high
+description: >-
+  The message headers don't line up with who the message claims to be from: a reply-to on a
+  different domain, a display name that embeds another address, or a lookalike domain. This
+  describes the message, not the person behind it, and it fires on compromised real accounts
+  only when they reroute replies.
+explanation: "This message's headers don't match its claimed origin ({evidence})."
+indicators:
+  structural:
+    - reply_to_mismatch
+    - display_name_spoof
+    - lookalike_domain
+examples:
+  positive:
+    - "From: CFO <cfo@acme-corp.co> Reply-To: cfo.office@gmail.com"
+    - 'From: "Dana Ruiz dana@acme.com" <dana.ruiz@mail-acme.net>'
+  hard_negative:
+    - "From: billing@vendor.com Reply-To: ar@vendor.com"
+    - "From: Dana Ruiz <dana@acme.com>"
+references:
+  - "CISA: Email authentication and display-name spoofing"
+author: seed-library

@@ -1,0 +1,37 @@
+id: urgency.consequence
+name: Threatened consequence
+family: urgency
+stages: [enterprise, copilot]
+version: 1.0.0
+status: active
+severity: medium
+description: >-
+  Pressure created by naming what goes wrong if the recipient doesn't act now: a lost deal, a
+  penalty, a supplier stopping work, or personal blame.
+explanation: 'This request warns of consequences ("{evidence}") to push for fast action.'
+indicators:
+  lexical:
+    - we will lose the deal
+    - we'll lose the deal
+    - or we lose the deal
+    - account will be suspended
+    - account will be closed
+    - service will be suspended
+    - stop shipment
+    - put your account on hold
+    - you will be held responsible
+    - it will be on you
+  patterns:
+    - "(or|otherwise) (we|you) (will|'ll) (lose|miss|be)"
+    - "(legal|collections?) action"
+    - "(pay|face|incur) (a |significant |heavy )?(penalty|penalties|late fees?)"
+examples:
+  positive:
+    - "If this isn't paid today we will lose the deal and it will be on you."
+    - "Pay now or your account will be suspended and shipments stop."
+  hard_negative:
+    - "Per our contract, invoices paid after 45 days carry a 1.5% late fee."
+    - "Reminder: our standard terms include a penalty clause for missed SLAs."
+references:
+  - "CISA: Avoiding Social Engineering and Phishing Attacks"
+author: seed-library

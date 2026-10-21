@@ -1,0 +1,34 @@
+id: process-bypass.retroactive-approval
+name: Approval promised later
+family: process-bypass
+stages: [enterprise]
+version: 1.0.0
+status: active
+severity: medium
+description: >-
+  The paperwork, approval or explanation is promised for after the money moves. That reverses
+  the order the control exists to enforce.
+explanation: 'This request promises the paperwork after the action ("{evidence}"), which reverses the control.'
+indicators:
+  lexical:
+    - paperwork to follow
+    - paperwork will follow
+    - documentation to follow
+    - invoice to follow
+    - I'll sign off later
+    - I will sign off later
+    - I'll approve it after
+    - approve it after
+    - we'll sort out the paperwork
+    - backfill the approval
+    - I'll send the details later
+examples:
+  positive:
+    - "Send it now, paperwork to follow on Monday."
+    - "I'll sign off later, we'll sort out the paperwork after closing."
+  hard_negative:
+    - "Signed contract attached; the invoice will be issued on delivery."
+    - "Approval is in Coupa (REQ-2231); payment can go out on the normal run."
+references:
+  - "FBI IC3 PSA I-091024-PSA: Business Email Compromise"
+author: seed-library

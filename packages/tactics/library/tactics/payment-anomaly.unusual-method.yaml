@@ -1,0 +1,38 @@
+id: payment-anomaly.unusual-method
+name: Unusual payment method
+family: payment-anomaly
+stages: [enterprise]
+version: 1.0.0
+status: active
+severity: high
+description: >-
+  Payment requested in a form that is hard to reverse and unusual for business: gift cards,
+  cryptocurrency, a personal account, or a wire to a new international beneficiary.
+explanation: 'This request asks for a hard-to-reverse payment method ("{evidence}").'
+indicators:
+  lexical:
+    - iTunes card
+    - Google Play card
+    - Steam card
+    - scratch off the back
+    - photos of the cards
+    - bitcoin
+    - BTC
+    - USDT
+    - crypto wallet
+    - cryptocurrency
+    - personal account
+    - Zelle me
+    - Venmo me
+  patterns:
+    - "(send|buy|purchase|get|pick up) (me )?([\\w$]+ ){0,3}(gift ?cards?|vouchers)"
+examples:
+  positive:
+    - "Buy six Apple gift cards and send me photos of the cards with the backs scratched off."
+    - "Send the deposit to this bitcoin wallet, the bank route is too slow."
+  hard_negative:
+    - "HR is giving each team member a $50 Amazon gift card for the holidays through the rewards portal."
+    - "Expense reports must be submitted with receipts; personal card charges are reimbursed monthly."
+references:
+  - "FTC: Gift card scams"
+author: seed-library

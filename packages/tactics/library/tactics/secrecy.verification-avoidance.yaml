@@ -1,0 +1,39 @@
+id: secrecy.verification-avoidance
+name: Verification avoidance
+family: secrecy
+stages: [enterprise]
+version: 1.0.0
+status: active
+severity: high
+description: >-
+  The requester makes themselves unreachable through the normal channel, so the recipient
+  can't call back to check. Usually phrased as being in meetings, travelling, or having a
+  broken phone.
+explanation: 'This request discourages checking back through the usual channel ("{evidence}").'
+indicators:
+  lexical:
+    - can't take calls
+    - cannot take calls
+    - can't talk right now
+    - unable to talk
+    - reply by email only
+    - email only
+    - don't call me
+    - do not call
+    - my phone is broken
+    - my phone is dead
+    - no need to call
+    - no need to verify
+    - no need to confirm
+  patterns:
+    - "(i'?m|i am) (unreachable|not reachable|unavailable) (by|on) (phone|the phone)"
+examples:
+  positive:
+    - "I can't take calls right now, reply by email only."
+    - "My phone is dead, no need to call, just confirm here."
+  hard_negative:
+    - "I'm out of office until Monday; for urgent matters call Priya at the main desk."
+    - "Please don't call during the all-hands; I'll ring you back at 3."
+references:
+  - "CISA: Avoiding Social Engineering and Phishing Attacks"
+author: seed-library

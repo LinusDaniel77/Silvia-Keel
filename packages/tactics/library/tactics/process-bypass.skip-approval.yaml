@@ -1,0 +1,40 @@
+id: process-bypass.skip-approval
+name: Process bypass
+family: process-bypass
+stages: [enterprise]
+version: 1.0.0
+status: active
+severity: high
+description: >-
+  An explicit request to skip the normal control: the second approver, the callback, the
+  ticket, the purchase order. Usually framed as a one-time exception.
+explanation: 'This request asks to skip a normal control ("{evidence}").'
+indicators:
+  lexical:
+    - skip the usual approval
+    - skip the normal approval
+    - skip the approval
+    - bypass the approval
+    - bypass the usual
+    - no need for a PO
+    - don't need a ticket
+    - without a ticket
+    - outside the normal process
+    - just this once
+    - this one time
+    - make an exception
+    - don't go through the system
+    - don't put it through
+  patterns:
+    - "(skip|bypass|ignore|work around) (the )?(usual|normal|standard|regular)? ?(approval|process|procedure|workflow|callback|verification|controls?)"
+    - "(no|without) (second|dual|secondary) (approval|approver|sign-?off)"
+examples:
+  positive:
+    - "Skip the normal approval this once, I'll take responsibility."
+    - "Process it without a second approver, just this once."
+  hard_negative:
+    - "The new approval workflow goes live Monday; please submit all requests through Coupa."
+    - "Emergency change approved via CAB, ticket CHG-4412 attached."
+references:
+  - "Manipulation Shield roadmap: enterprise tactic additions"
+author: seed-library

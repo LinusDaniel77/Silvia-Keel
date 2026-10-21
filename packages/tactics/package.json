@@ -1,0 +1,14 @@
+{
+  "name": "@shield/tactics",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@shield/shared": "workspace:*",
+    "yaml": "2.8.3",
+    "zod": "3.25.76"
+  }
+}

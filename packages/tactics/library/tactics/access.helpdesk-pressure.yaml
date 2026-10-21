@@ -1,0 +1,37 @@
+id: access.helpdesk-pressure
+name: Help-desk pressure
+family: access
+stages: [enterprise]
+version: 1.0.0
+status: active
+severity: high
+description: >-
+  An urgent password, MFA or device reset is requested for someone who can't go through the
+  normal identity check, often a "traveling executive" locked out before a deadline.
+explanation: 'This request pushes for an account reset outside the normal identity check ("{evidence}").'
+indicators:
+  lexical:
+    - reset my MFA
+    - reset my password
+    - reset the MFA
+    - remove my MFA
+    - new phone for MFA
+    - register my new phone
+    - add my new device
+    - locked out
+    - lost my phone
+    - bypass MFA
+    - disable MFA
+    - temporary password
+  patterns:
+    - "(reset|disable|remove|re-?enroll) (the |my |his |her )?(MFA|2FA|two-factor|authenticator|password)"
+examples:
+  positive:
+    - "I'm traveling and locked out, reset my MFA now, I have a board call in 10 minutes."
+    - "Lost my phone, please register my new phone for MFA, I can't do the video check."
+  hard_negative:
+    - "Reminder: password resets are self-service at id.acme.com; the service desk will verify you by video."
+    - "Ticket INC-8812: user completed identity verification in person; MFA re-enrolled."
+references:
+  - "CISA advisory AA23-320A: Scattered Spider help-desk social engineering"
+author: seed-library

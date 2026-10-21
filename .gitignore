@@ -1,0 +1,6 @@
+node_modules/
+.env
+.env.*
+eval-report.md
+*.log
+.DS_Store

@@ -1,0 +1,31 @@
+id: process-bypass.threshold-evasion
+name: Threshold evasion
+family: process-bypass
+stages: [enterprise]
+version: 1.0.0
+status: active
+severity: high
+description: >-
+  A payment is split or sized to stay under an approval limit, so it avoids the review it
+  would otherwise get.
+explanation: 'This request is shaped to stay under an approval limit ("{evidence}").'
+indicators:
+  lexical:
+    - split it into
+    - split the payment
+    - keep it under
+    - stay under the limit
+    - below the approval limit
+    - under the approval threshold
+    - two separate payments
+    - multiple smaller payments
+examples:
+  positive:
+    - "Split the payment into two so each stays under the approval limit."
+    - "Keep it under $10k per transfer so it doesn't need a second sign-off."
+  hard_negative:
+    - "The contract allows invoicing in two milestones: 50% at kickoff and 50% at delivery."
+    - "Per policy, payments above $25k need CFO approval in the system."
+references:
+  - "Association of Certified Fraud Examiners: structuring and split purchases"
+author: seed-library

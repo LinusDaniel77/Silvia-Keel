@@ -1,0 +1,40 @@
+id: channel.switch
+name: Channel switch
+family: channel
+stages: [enterprise, elicitation]
+version: 1.0.0
+status: active
+severity: medium
+description: >-
+  The request moves across channels: an email followed by a call or chat to "confirm" it, or
+  a push to continue somewhere the organization can't see. Chaining channels makes each
+  message look corroborated by the others.
+explanation: 'This request moves between channels ("{evidence}"), so each message seems to confirm the others.'
+indicators:
+  lexical:
+    - text me
+    - WhatsApp
+    - my personal email
+    - my personal number
+    - my cell
+    - I'll call you to confirm
+    - I will call you to confirm
+    - following up on my email
+    - as discussed on the phone
+    - as discussed on the call
+  patterns:
+    - "(move|continue|take) (this|the conversation) (to|over to|offline)"
+    - "(on|via|over) (Signal|Telegram)"
+  structural:
+    - cross_channel_sequence
+examples:
+  positive:
+    - "Following up on my email, I'll call you to confirm the wire details."
+    - "Let's take this to WhatsApp, text me at this number."
+    - "As discussed on the phone, please release the payment now."
+  hard_negative:
+    - "Per our call this morning, the revised SOW is attached and has been routed through procurement."
+    - "We moved the vendor review to Teams; the meeting invite is on your calendar."
+references:
+  - "Manipulation Shield roadmap: chained-channel attacks"
+author: seed-library

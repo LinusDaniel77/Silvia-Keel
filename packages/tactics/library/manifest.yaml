@@ -1,0 +1,40 @@
+# Manipulation Shield tactic library manifest.
+# Bump `version` whenever any tactic changes, then run `pnpm shield tactics lock`.
+version: 0.1.0
+
+# A tactic counts as fired at or above this confidence.
+fire_threshold: 0.5
+
+# A high-risk action pauses when this many distinct *pressure* families fire.
+pause_min_families: 2
+
+# Families that describe the action rather than pressure on a person. They feed critical
+# combinations but do not count toward pause_min_families, so a legitimate vendor
+# bank-change request is never paused just for being a bank change.
+non_pressure_families: [payment-anomaly]
+
+critical_combinations:
+  - id: bank-change-under-secrecy
+    description: New bank details for a vendor, combined with a request to keep it quiet.
+    requires: [payment-anomaly.vendor-bank-change, "family:secrecy"]
+  - id: bank-change-with-new-contact
+    description: New bank details plus new contact details to "confirm" them.
+    requires: [payment-anomaly.vendor-bank-change, channel.new-contact-details]
+  - id: bank-change-sender-mismatch
+    description: New bank details from a sender whose headers don't line up.
+    requires: [payment-anomaly.vendor-bank-change, identity.sender-mismatch]
+  - id: unusual-payment-under-time-pressure
+    description: Gift cards, crypto or a personal account, under time pressure.
+    requires: [payment-anomaly.unusual-method, "family:urgency"]
+  - id: unusual-payment-from-authority
+    description: Gift cards, crypto or a personal account, requested in an executive's name.
+    requires: [payment-anomaly.unusual-method, "family:authority"]
+  - id: code-request-under-pressure
+    description: A request to read back a one-time code or approve a push, under time pressure.
+    requires: [access.code-or-push-request, "family:urgency"]
+  - id: classifier-directive-on-payment
+    description: Text addressed to a security filter, inside a payment request.
+    requires: ["family:injection", "family:payment-anomaly"]
+  - id: classifier-directive-on-access
+    description: Text addressed to a security filter, inside an access request.
+    requires: ["family:injection", "family:access"]

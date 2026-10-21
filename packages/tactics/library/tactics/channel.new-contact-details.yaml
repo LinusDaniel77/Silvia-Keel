@@ -1,0 +1,35 @@
+id: channel.new-contact-details
+name: New contact details
+family: channel
+stages: [enterprise]
+version: 1.0.0
+status: active
+severity: high
+description: >-
+  The message supplies a new phone number or email to use for confirmation. Any check made
+  through contact details taken from the request itself goes back to the requester.
+explanation: 'This request supplies its own contact details for confirmation ("{evidence}"). Verify through a contact you already have on file.'
+indicators:
+  lexical:
+    - our new number
+    - my new number
+    - new phone number
+    - new email address
+    - updated contact details
+    - updated contact information
+    - use this number
+    - reach me at
+    - call me at
+    - contact me at this
+  patterns:
+    - "(please )?(use|call|contact|reach) (me|us) (on|at|via) (this|the following|my) (new )?(number|email|line)"
+examples:
+  positive:
+    - "Please call our new number +1 415 555 0199 to confirm the change."
+    - "Reach me at this email from now on, my old one is compromised."
+  hard_negative:
+    - "Our office moved; the new address is in the signature and on our website."
+    - "Our AP desk phone is unchanged; call the number on file if anything looks off."
+references:
+  - "FBI IC3 PSA I-091024-PSA: Business Email Compromise"
+author: seed-library

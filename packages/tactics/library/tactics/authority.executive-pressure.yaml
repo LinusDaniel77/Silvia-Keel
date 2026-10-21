@@ -1,0 +1,38 @@
+id: authority.executive-pressure
+name: Executive pressure
+family: authority
+stages: [enterprise]
+version: 1.0.0
+status: active
+severity: high
+description: >-
+  A senior name is used to override normal process: the executive is unavailable, wants it
+  done without questions, and implies the recipient's standing depends on compliance.
+explanation: 'This request leans on executive authority ("{evidence}") to get it done without the usual questions.'
+indicators:
+  lexical:
+    - just get this done
+    - just get it done
+    - just handle it
+    - don't have time to explain
+    - no time to explain
+    - I'll explain later
+    - I need you to take care of this
+    - do this for me
+    - the CEO needs
+    - the CEO wants
+    - per the CEO
+  patterns:
+    - "(i'?m|i am) (in|stuck in|heading into|between) (a |the |back-to-back )?(board |investor )?meetings?"
+    - "(i'?m|i am) (on|boarding) (a )?(flight|plane)"
+examples:
+  positive:
+    - "I'm in a board meeting, just get this done and I'll explain later."
+    - "I'm boarding a flight, I need you to take care of this wire for me."
+    - "The CEO needs this handled now, no time to explain."
+  hard_negative:
+    - "Board meeting materials are attached; please review before Thursday."
+    - "The CEO approved the Q3 budget in the system yesterday; finance will process as usual."
+references:
+  - "FBI IC3 PSA I-091024-PSA: Business Email Compromise"
+author: seed-library

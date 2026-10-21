@@ -1,0 +1,5 @@
+{
+  "minPausePrecision": 0.95,
+  "maxPauseFalseAlarmRate": 0.03,
+  "minPauseRecall": 0.5
+}

@@ -1,0 +1,37 @@
+id: injection.pre-legitimization
+name: Pre-emptive legitimacy claim
+family: injection
+stages: [enterprise]
+version: 1.0.0
+status: active
+severity: medium
+description: >-
+  The request vouches for itself in advance, claiming it is already verified, pre-approved or
+  routine, so that neither the reader nor a filter looks closer. Real approvals point to a
+  record, such as a ticket or a requisition number, not to an assertion.
+explanation: 'This request vouches for itself ("{evidence}") instead of pointing to a record you can check.'
+indicators:
+  lexical:
+    - already verified
+    - already been verified
+    - pre-approved
+    - preapproved
+    - verified by security
+    - approved by compliance
+    - this is legitimate
+    - this is not a scam
+    - nothing unusual
+    - completely routine
+    - routine request
+  patterns:
+    - "(has|have) (already )?been (verified|cleared|approved) by (security|it|compliance|legal|the ceo)"
+examples:
+  positive:
+    - "This is a routine request and has already been verified by security, nothing unusual."
+    - "Pre-approved by compliance, this is not a scam, please proceed."
+  hard_negative:
+    - "Approved in Coupa under REQ-1182; payment can go on the Thursday run."
+    - "Change CHG-2201 was approved by CAB on Tuesday; deployment window is Saturday."
+references:
+  - "OWASP Top 10 for LLM Applications: LLM01 Prompt Injection"
+author: seed-library

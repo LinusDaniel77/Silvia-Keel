@@ -1,0 +1,45 @@
+id: urgency.deadline
+name: False urgency
+family: urgency
+stages: [enterprise, copilot]
+version: 1.0.0
+status: active
+severity: medium
+description: >-
+  An artificial deadline that leaves no time for normal checks. Real deadlines exist, so this
+  tactic alone never pauses anything; it matters when it stacks with authority, secrecy or a
+  process bypass.
+explanation: 'This request sets a tight deadline ("{evidence}"), which cuts short the normal checks.'
+indicators:
+  lexical:
+    - urgent
+    - urgently
+    - asap
+    - as soon as possible
+    - right away
+    - immediately
+    - time-sensitive
+    - time sensitive
+    - within the hour
+    - in the next hour
+    - in the next 30 minutes
+    - before end of day
+    - before close of business
+    - by end of day
+    - no later than today
+    - needs to go out today
+    - can't wait
+  patterns:
+    - "within (the next )?\\d+ (minutes|mins|hours?)"
+    - "before (the )?(cut-?off|wire cut-?off|bank closes)"
+examples:
+  positive:
+    - "I need this wire out within the hour, the deal closes at noon."
+    - "Urgent: process the attached invoice before end of day."
+    - "This is time-sensitive, please handle it right away."
+  hard_negative:
+    - "Friendly reminder that the quarterly invoice is due on the 30th, per our usual terms."
+    - "Payroll runs Thursday as usual; please submit timesheets by Wednesday."
+references:
+  - "FBI IC3 PSA I-091024-PSA: Business Email Compromise"
+author: seed-library

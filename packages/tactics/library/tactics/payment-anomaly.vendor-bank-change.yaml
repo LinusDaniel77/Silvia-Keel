@@ -1,0 +1,42 @@
+id: payment-anomaly.vendor-bank-change
+name: Vendor detail change
+family: payment-anomaly
+stages: [enterprise]
+version: 1.0.0
+status: active
+severity: high
+description: >-
+  New bank details for an existing supplier. This is the single most common payload in vendor
+  email compromise. Legitimate changes happen too, so on its own this only warns; it pauses
+  when combined with secrecy, new contact details, sender mismatch, or two pressure tactics.
+explanation: 'This request changes where a supplier gets paid ("{evidence}"). Confirm using the contact already on the vendor record.'
+indicators:
+  lexical:
+    - new bank account
+    - new account details
+    - updated bank details
+    - updated banking details
+    - updated banking information
+    - change of bank details
+    - changed banks
+    - new banking details
+    - new remittance details
+    - updated remittance
+    - remit to the new account
+    - our bank account has changed
+    - account is under audit
+  patterns:
+    - "(new|updated|changed?) (bank|banking|wire|ACH|remittance|payment) (account|details|information|info|instructions)\\b"
+    - "(routing|account|IBAN|sort code) (number )?(has|have) changed"
+  structural:
+    - action_vendor_bank_change
+examples:
+  positive:
+    - "Please note our updated banking details below and use them for all future payments."
+    - "Our current account is under audit, kindly remit to the new account attached."
+  hard_negative:
+    - "No change to our bank details; please continue paying the account on file."
+    - "Your remittance advice for invoice 3381 is attached."
+references:
+  - "FBI IC3 PSA I-091024-PSA: Business Email Compromise"
+author: seed-library

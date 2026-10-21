@@ -1,0 +1,20 @@
+{
+  "id": "sample-multi-channel",
+  "action": { "kind": "payment", "amount": 92000, "currency": "USD" },
+  "artifacts": [
+    {
+      "id": "email-1",
+      "channel": "email",
+      "sender": { "address": "marcus.webb@keelbridge.com", "displayName": "Marcus Webb" },
+      "subject": "Payment to Halvorsen Partners",
+      "body": "Please set up a payment of $92,000 to Halvorsen Partners today; details attached. I'll call you to confirm. Invoice to follow.\n\nMarcus"
+    },
+    {
+      "id": "call-1",
+      "channel": "call",
+      "sender": { "displayName": "Caller ID: Marcus Webb (mobile)" },
+      "body": "Call note: caller said 'As discussed in my email, I need the Halvorsen payment out before the bank closes. I'm heading into the board meeting, just get it done.'"
+    }
+  ],
+  "context": { "orgDomains": ["keelbridge.com"] }
+}

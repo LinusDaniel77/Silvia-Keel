@@ -1,0 +1,86 @@
+{
+  "libraryVersion": "0.1.0",
+  "libraryHash": "kxMTZmM2IzMzcifQ",
+  "tactics": {
+    "access.code-or-push-request": {
+      "version": "1.0.0",
+      "hash": "c2a48729ca559c89"
+    },
+    "access.credential-request": {
+      "version": "1.0.0",
+      "hash": "a5e0b21a430770b6"
+    },
+    "access.helpdesk-pressure": {
+      "version": "1.0.0",
+      "hash": "31bce319b55fa544"
+    },
+    "authority.executive-pressure": {
+      "version": "1.0.0",
+      "hash": "1294c571d5f311af"
+    },
+    "authority.invoked-authority": {
+      "version": "1.0.0",
+      "hash": "3a3eb4209a024b9c"
+    },
+    "channel.new-contact-details": {
+      "version": "1.0.0",
+      "hash": "01d986a7e2c888d0"
+    },
+    "channel.switch": {
+      "version": "1.0.0",
+      "hash": "11240c163aa487fc"
+    },
+    "identity.sender-mismatch": {
+      "version": "1.0.0",
+      "hash": "2c8ffcef1e61848a"
+    },
+    "injection.classifier-directive": {
+      "version": "1.0.0",
+      "hash": "7a07898851e3a6e1"
+    },
+    "injection.pre-legitimization": {
+      "version": "1.0.0",
+      "hash": "16cba97f3a551c0b"
+    },
+    "payment-anomaly.unusual-method": {
+      "version": "1.0.0",
+      "hash": "4a8e72a7c7a5422f"
+    },
+    "payment-anomaly.vendor-bank-change": {
+      "version": "1.0.0",
+      "hash": "920e62d026517a01"
+    },
+    "process-bypass.retroactive-approval": {
+      "version": "1.0.0",
+      "hash": "7dc9c10e98fb2ba0"
+    },
+    "process-bypass.skip-approval": {
+      "version": "1.0.0",
+      "hash": "3589181063b52bba"
+    },
+    "process-bypass.threshold-evasion": {
+      "version": "1.0.0",
+      "hash": "410dc12829909ade"
+    },
+    "rapport.flattery-favor": {
+      "version": "1.0.0",
+      "hash": "059877f26cc5c0d8"
+    },
+    "secrecy.confidential": {
+      "version": "1.0.0",
+      "hash": "ff695c40f60baecf"
+    },
+    "secrecy.verification-avoidance": {
+      "version": "1.0.0",
+      "hash": "6a58b31f12088c25"
+    },
+    "urgency.consequence": {
+      "version": "1.0.0",
+      "hash": "127eb0315b77e03a"
+    },
+    "urgency.deadline": {
+      "version": "1.0.0",
+      "hash": "7b0afe9116f3b337"
+    }
+  }
+}
