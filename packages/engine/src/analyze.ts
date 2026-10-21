@@ -22,27 +22,38 @@ export interface AnalyzeOptions {
   provider?: LlmProvider;
 }
 
+/** Everything that runs before the LLM: deterministic, free, and identical in every mode. */
+export function prepare(input: ShieldRequestInput, library: TacticLibrary) {
+  const request = ShieldRequestSchema.parse(input);
+  const text = analysisText(request.artifacts);
+  const intents = detectIntents(text);
+  const highRisk = isHighRisk(request, intents);
+  const features = computeFeatures(request);
+  const rules = ruleHits(library, text, features);
+  /** The LLM is only asked about high-risk requests or ones the rules already flag. */
+  const needsLlm = highRisk || rules.some((h) => h.confidence >= library.manifest.fire_threshold);
+  return { request, text, intents, highRisk, features, rules, needsLlm };
+}
+
+/** The exact prompt the classifier would receive, or null when the prefilter skips the LLM. */
+export function promptFor(input: ShieldRequestInput, library: TacticLibrary, model: string) {
+  const p = prepare(input, library);
+  return p.needsLlm ? buildPrompt(library, p.request, model) : null;
+}
+
 /**
  * normalize -> prefilter -> features -> rules (+ LLM) -> merge -> decide -> explain.
  * Every analysis records the library version, model and prompt hash that produced it.
  */
 export async function analyze(input: ShieldRequestInput, opts: AnalyzeOptions): Promise<Analysis> {
-  const request = ShieldRequestSchema.parse(input);
   const { library, provider } = opts;
-  const text = analysisText(request.artifacts);
-
-  const intents = detectIntents(text);
-  const highRisk = isHighRisk(request, intents);
-  const features = computeFeatures(request);
-  const rules = ruleHits(library, text, features);
+  const { request, text, intents, highRisk, features, rules, needsLlm } = prepare(input, library);
 
   let llmHits: TacticHit[] = [];
   let llmStatus: Provenance["llmStatus"] = "not_called";
   let promptHash: string | null = null;
   if (provider) {
-    const worthAsking =
-      highRisk || rules.some((h) => h.confidence >= library.manifest.fire_threshold);
-    if (!worthAsking) {
+    if (!needsLlm) {
       llmStatus = "skipped_prefilter";
     } else {
       const prompt = buildPrompt(library, request, provider.model ?? provider.id);

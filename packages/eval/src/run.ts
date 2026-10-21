@@ -99,6 +99,7 @@ export async function runEval(
     let fp = 0;
     let fn = 0;
     for (const r of results) {
+      if (!r.item.labels.tacticsLabeled) continue;
       const labeled = r.item.labels.tactics.includes(t.id);
       const hit = r.detected.includes(t.id);
       if (labeled && hit) tp++;

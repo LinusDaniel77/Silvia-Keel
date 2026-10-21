@@ -11,6 +11,7 @@
     "@shield/eval": "workspace:*",
     "@shield/llm": "workspace:*",
     "@shield/shared": "workspace:*",
-    "@shield/tactics": "workspace:*"
+    "@shield/tactics": "workspace:*",
+    "zod": "3.25.76"
   }
 }

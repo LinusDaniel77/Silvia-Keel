@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Manipulation Shield</title>
+    <link rel="stylesheet" href="/styles.css" />
+    <script src="/app.js" defer></script>
+  </head>
+  <body>
+    <header class="top">
+      <div>
+        <h1>Manipulation Shield</h1>
+        <p class="sub">
+          Paste a request. See the pressure tactics in it, and whether it should pause.
+        </p>
+      </div>
+      <div class="status" id="status">Loading…</div>
+    </header>
+
+    <main class="grid">
+      <section class="panel" aria-labelledby="in-h">
+        <h2 id="in-h">Request</h2>
+        <div class="samples" id="samples" aria-label="Examples"></div>
+        <label class="field">
+          <span>Message (raw email with headers, plain text, or a request JSON)</span>
+          <textarea
+            id="text"
+            rows="16"
+            spellcheck="false"
+            placeholder="From: CFO &lt;cfo@example.com&gt;&#10;Subject: Wire today&#10;&#10;I need a wire out within the hour…"
+          ></textarea>
+        </label>
+        <div class="row">
+          <label class="field">
+            <span>What it asks for</span>
+            <select id="action">
+              <option value="payment">Payment or wire</option>
+              <option value="vendor_bank_change">Vendor bank change</option>
+              <option value="credential_reset">Password or MFA reset</option>
+              <option value="access_grant">Access grant</option>
+              <option value="data_export">Data export</option>
+              <option value="none">Nothing specific</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>Amount (optional)</span>
+            <input id="amount" type="number" min="0" step="any" inputmode="decimal" />
+          </label>
+        </div>
+        <div class="row">
+          <label class="field">
+            <span>Your domains</span>
+            <input id="orgDomain" placeholder="keelbridge.com" />
+          </label>
+          <label class="field">
+            <span>Vendor's known domains</span>
+            <input id="knownDomain" placeholder="atlasfreight.com" />
+          </label>
+        </div>
+        <label class="check" id="claudeRow">
+          <input type="checkbox" id="useClaude" />
+          <span>Use Claude <small id="claudeNote"></small></span>
+        </label>
+        <button id="go" type="button">Analyze</button>
+        <p class="error" id="error" role="alert" hidden></p>
+      </section>
+
+      <section class="panel" aria-labelledby="out-h" aria-live="polite">
+        <h2 id="out-h">Read</h2>
+        <div id="empty" class="empty">Pick an example or paste a message, then Analyze.</div>
+        <div id="result" hidden>
+          <div class="verdict">
+            <span class="badge" id="badge"></span>
+            <div>
+              <div class="verdict-line" id="verdictLine"></div>
+              <div class="combo" id="combo"></div>
+            </div>
+          </div>
+          <ul class="explanations" id="explanations"></ul>
+          <h3>Where it shows up</h3>
+          <div class="message" id="message"></div>
+          <h3>Tactics</h3>
+          <table class="tactics">
+            <thead>
+              <tr>
+                <th>Tactic</th>
+                <th>Confidence</th>
+                <th>Seen by</th>
+              </tr>
+            </thead>
+            <tbody id="tactics"></tbody>
+          </table>
+          <p class="prov" id="prov"></p>
+        </div>
+      </section>
+    </main>
+    <footer class="foot">
+      Local demo. Nothing is stored. With Claude ticked, the text is sent to Anthropic for analysis.
+    </footer>
+  </body>
+</html>

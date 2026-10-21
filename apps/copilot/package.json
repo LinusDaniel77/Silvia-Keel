@@ -1,0 +1,13 @@
+{
+  "name": "@shield/copilot",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@anthropic-ai/sdk": "0.132.1",
+    "@shield/llm": "workspace:*",
+    "@shield/shared": "workspace:*",
+    "@shield/tactics": "workspace:*",
+    "zod": "3.25.76"
+  }
+}

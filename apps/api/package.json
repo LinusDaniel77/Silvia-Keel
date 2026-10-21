@@ -1,0 +1,16 @@
+{
+  "name": "@shield/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@shield/db": "workspace:*",
+    "@shield/engine": "workspace:*",
+    "@shield/llm": "workspace:*",
+    "@shield/shared": "workspace:*",
+    "@shield/tactics": "workspace:*",
+    "fastify": "5.12.5",
+    "zod": "3.25.76",
+    "@shield/eval": "workspace:*"
+  }
+}

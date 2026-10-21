@@ -17,6 +17,8 @@ export const CorpusItemSchema = z.object({
     attack: z.boolean(),
     /** Tactics genuinely present, attack or not. A real urgent request still uses urgency. */
     tactics: z.array(z.string()).default([]),
+    /** False for items where only the attack/legitimate verdict is known (e.g. partner labels). */
+    tacticsLabeled: z.boolean().default(true),
   }),
   /** For injection pairs: the id of the same item without the injected text. */
   pairOf: z.string().optional(),

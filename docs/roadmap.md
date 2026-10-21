@@ -326,6 +326,57 @@ Deviations from the plan, and why:
 - **`packages/db` deferred to M2.** Nothing persists until connectors exist.
 - **One LLM pass on `claude-opus-5-5`, not a triage/full-read cascade.** Measure the single model at different effort levels with the eval before adding a cascade. A cascade costs prompt-cache reuse and adds a second failure mode.
 
+## M1 status
+
+Built:
+
+- **`apps/demo`:** a local paste-a-request web app.
+  - Server: `node:http` with no extra dependencies, a strict CSP, a 100 KB body limit and an allowlisted static file set. It never logs bodies.
+  - Page: evidence highlighting, four examples, light and dark themes, and a phone-width layout.
+  - Tests run against a real server on an ephemeral port.
+- **`apps/copilot`:** the first-test harness. It reads `copilot-data/*/conversation.txt` and `my-read.md` and asks Claude for a structured read.
+  - The read covers goals, leverage, feelings, alternate readings, tactics by each side (self-check), honest pushback and a next message.
+  - Tactic claims without a verbatim quote are dropped.
+  - Output is a side-by-side report with a scoring table.
+  - Principle 6 holds structurally: the output schema has no field for the other person's weak spots. Tests check both the schema and the prompt.
+
+Not yet run: the live Claude eval and the copilot test itself. Both need Anthropic credentials visible in the session.
+
+## M2/M3 core status
+
+Built:
+
+- **`packages/db`:**
+  - Postgres schema with row-level security for each tenant, migrations, PGlite for tests and local runs, and retention purge.
+  - No person columns (tested).
+- **`packages/engine/src/correlate.ts`:** joins messages and approvals into one request.
+- **`apps/api`:** the approval gate.
+  - Shadow and enforce modes.
+  - Verification only through system-of-record contacts.
+  - Outcomes as labels, audited overrides, and label export for the eval. See `docs/api.md`.
+- **Paid-eval cost controls:** `--estimate` (free), `--max-usd`, `--batch` (half price), `--tags`, and low effort by default. The cheap first look is estimated at about $0.05 on Haiku 5.5.
+
+**M4 console (built):** served by the API at `/console` (see `docs/api.md`).
+
+- Overview with per-workflow pause precision, false-alarm rate and catch rate, each with confidence intervals.
+- Catch log and top tactics.
+- Request triage with evidence highlighting, verify, override and after-the-fact review.
+- Shadow/enforce switching, gated on reviewed false-alarm rates.
+- No per-person views.
+- `--seed-demo` fills it for partner walk-throughs.
+
+**Pilot-ready (built):**
+
+- Docker Compose with Postgres 16 and `pnpm admin` (tenants, key rotation, vendor-contact CSV
+  import). See `docs/pilot.md`.
+- A real-Postgres test path, also run in CI.
+- The Outlook "Check request" add-in. See `docs/outlook-addin.md`. It has not yet been tested
+  inside a real Outlook client.
+
+The paid eval is blocked until 2026-11-01 by the Anthropic account's spending limit (verified with
+one request). When it reopens, run the cheap Haiku batch in `docs/eval-methodology.md` (about
+$0.05). It was deliberately deferred for budget anyway. Next free steps: native connectors once design partners pick their systems, and the M4 console.
+
 Next:
 
 1. Run `pnpm shield eval --provider anthropic` under zero-data-retention terms. Record the numbers in `docs/eval-methodology.md`, paying particular attention to the paraphrase slice and the two false alarms.

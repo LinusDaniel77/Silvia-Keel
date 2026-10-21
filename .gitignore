@@ -4,3 +4,6 @@ node_modules/
 eval-report.md
 *.log
 .DS_Store
+copilot-data/*
+!copilot-data/README.md
+!.env.example

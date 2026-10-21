@@ -65,6 +65,27 @@ to notice that the request points to a record and a known person. The first
 `--provider anthropic` run is the next measurement to take. Its numbers go in this table with
 the model id.
 
+## Running the paid eval cheaply
+
+Every paid run can be priced first, for free, and capped:
+
+```sh
+# Free: prints the number of classifier calls and an estimated cost. No API call, no key needed.
+pnpm shield eval --provider anthropic --model claude-haiku-5-5 --batch \
+  --tags paraphrase,hard,injection,handwritten --estimate
+# The cheap first look (about $0.05 estimated): Haiku 5.5, Batch API at half price, ~116 items.
+pnpm shield eval --provider anthropic --model claude-haiku-5-5 --batch \
+  --tags paraphrase,hard,injection,handwritten --max-usd 1 --out docs/eval-runs/<date>-haiku.md
+```
+
+- **Spending cap.** `--max-usd` stops synchronous runs before the cap is crossed. Skipped items
+  fall back to rules and are listed in the report. Batch runs refuse to submit if the estimate
+  exceeds the cap.
+- **Effort.** It defaults to `low`. The report's "API usage" section shows tokens and estimated
+  cost.
+- **Estimates are pessimistic.** The output allowance is 1,000 tokens per call. The billing
+  console is authoritative.
+
 ## CI gate
 
 `pnpm shield eval --gate` fails the build when rules-only results fall below
