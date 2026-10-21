@@ -8,9 +8,18 @@ const pct = (r: Rate) =>
 const short = (r: Rate) =>
   r.value === null ? "n/a" : `${(r.value * 100).toFixed(0)}% (${r.num}/${r.den})`;
 
+export interface ApiUsageSummary {
+  model: string;
+  batch: boolean;
+  calls: number;
+  usage: { input: number; output: number; cacheRead: number; cacheWrite: number };
+  estimatedUsd: number;
+  skippedForBudget: number;
+}
+
 export function renderReport(
   r: EvalResult,
-  opts: { date?: string; gateFailures?: string[] } = {},
+  opts: { date?: string; gateFailures?: string[]; apiUsage?: ApiUsageSummary } = {},
 ): string {
   const lines: string[] = [];
   lines.push(`# Manipulation Shield: eval report`);
@@ -39,6 +48,25 @@ export function renderReport(
     lines.push("");
   }
 
+  if (opts.apiUsage) {
+    const u = opts.apiUsage;
+    lines.push("## API usage");
+    lines.push("");
+    lines.push(
+      `- ${u.calls} classifier call(s) on \`${u.model}\`${u.batch ? " via the Batch API (half price)" : ""}`,
+    );
+    lines.push(
+      `- Tokens: ${u.usage.input.toLocaleString("en-US")} input, ${u.usage.cacheRead.toLocaleString("en-US")} cache read, ${u.usage.cacheWrite.toLocaleString("en-US")} cache write, ${u.usage.output.toLocaleString("en-US")} output`,
+    );
+    lines.push(
+      `- Estimated cost: $${u.estimatedUsd.toFixed(4)} (list prices; the billing console is authoritative)`,
+    );
+    if (u.skippedForBudget)
+      lines.push(
+        `- ${u.skippedForBudget} item(s) skipped by the spending cap and judged by rules only`,
+      );
+    lines.push("");
+  }
   lines.push("## Decision quality (PAUSE = positive)");
   lines.push("");
   lines.push("| Metric | PAUSE | WARN or above |");

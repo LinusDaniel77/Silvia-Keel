@@ -50,6 +50,9 @@ importers:
       '@shield/tactics':
         specifier: workspace:*
         version: link:../../packages/tactics
+      zod:
+        specifier: 3.25.76
+        version: 3.25.76
 
   apps/copilot:
     dependencies:

@@ -4,6 +4,7 @@ import {
   RawHitsSchema,
   type LlmProvider,
   type ProviderResult,
+  type ProviderUsage,
   type TacticPrompt,
 } from "./types.ts";
 
@@ -37,6 +38,32 @@ export function createAnthropicClient(env: Env = process.env): Anthropic {
   });
 }
 
+/**
+ * Models that accept the server-side refusal fallback (`fallbacks: "default"`). Haiku has no
+ * server-side fallback, so the parameter is omitted there and a refusal falls back to the rules.
+ */
+const SERVER_FALLBACK_MODELS = new Set([
+  "claude-fable-5-1",
+  "claude-opus-5-5",
+  "claude-opus-5",
+  "claude-sonnet-5-5",
+]);
+
+/** Converts the API's usage block into our token counts. */
+export function usageFrom(u: {
+  input_tokens: number;
+  output_tokens: number;
+  cache_read_input_tokens?: number | null;
+  cache_creation_input_tokens?: number | null;
+}): ProviderUsage {
+  return {
+    input: u.input_tokens,
+    output: u.output_tokens,
+    cacheRead: u.cache_read_input_tokens ?? 0,
+    cacheWrite: u.cache_creation_input_tokens ?? 0,
+  };
+}
+
 export interface AnthropicProviderOptions {
   model?: string;
   effort?: "low" | "medium" | "high" | "xhigh" | "max";
@@ -55,7 +82,8 @@ export class AnthropicProvider implements LlmProvider {
 
   constructor(opts: AnthropicProviderOptions = {}) {
     this.model = opts.model ?? process.env.SHIELD_MODEL ?? DEFAULT_ANTHROPIC_MODEL;
-    this.effort = opts.effort ?? "medium";
+    // Classification is a short, bounded task; low effort keeps spend down without changing model.
+    this.effort = opts.effort ?? "low";
     this.client = opts.client ?? createAnthropicClient();
   }
 
@@ -64,22 +92,25 @@ export class AnthropicProvider implements LlmProvider {
       const response = await this.client.beta.messages.parse({
         model: this.model,
         max_tokens: 16000,
-        betas: ["server-side-fallback-2026-07-01"],
-        fallbacks: "default",
+        ...(SERVER_FALLBACK_MODELS.has(this.model)
+          ? { betas: ["server-side-fallback-2026-07-01"], fallbacks: "default" as const }
+          : {}),
         output_config: { effort: this.effort, format: betaZodOutputFormat(RawHitsSchema) },
         system: [{ type: "text", text: prompt.system, cache_control: { type: "ephemeral" } }],
         messages: [{ role: "user", content: prompt.user }],
       });
+      const usage = usageFrom(response.usage);
       if (response.stop_reason === "refusal") {
-        return { status: "refused", detail: response.stop_details?.category ?? "refusal" };
+        return { status: "refused", detail: response.stop_details?.category ?? "refusal", usage };
       }
       if (!response.parsed_output) {
         return {
           status: "error",
           detail: `no parsed output (stop_reason=${response.stop_reason})`,
+          usage,
         };
       }
-      return { status: "ok", hits: response.parsed_output.hits };
+      return { status: "ok", hits: response.parsed_output.hits, usage };
     } catch (err) {
       if (err instanceof Anthropic.APIError) {
         return { status: "error", detail: `${err.status ?? "network"}: ${err.message}` };

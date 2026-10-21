@@ -2,14 +2,21 @@ import type Anthropic from "@anthropic-ai/sdk";
 import { describe, expect, it } from "vitest";
 import { AnthropicProvider, createAnthropicClient, hasAnthropicCredentials } from "../src/index.ts";
 
-function stubClient(response: unknown) {
+const USAGE = {
+  input_tokens: 120,
+  output_tokens: 40,
+  cache_read_input_tokens: 3000,
+  cache_creation_input_tokens: 0,
+};
+
+function stubClient(response: Record<string, unknown>) {
   const calls: Record<string, unknown>[] = [];
   const client = {
     beta: {
       messages: {
         parse: async (params: Record<string, unknown>) => {
           calls.push(params);
-          return response;
+          return { usage: USAGE, ...response };
         },
       },
     },
@@ -20,7 +27,7 @@ function stubClient(response: unknown) {
 const prompt = { system: "SYSTEM", user: "USER", hash: "abc" };
 
 describe("AnthropicProvider", () => {
-  it("sends a cached system prompt, structured output and server-side fallbacks", async () => {
+  it("sends a cached system prompt, structured output, low effort and server-side fallbacks", async () => {
     const { client, calls } = stubClient({
       stop_reason: "end_turn",
       parsed_output: {
@@ -33,6 +40,7 @@ describe("AnthropicProvider", () => {
     expect(result).toEqual({
       status: "ok",
       hits: [{ tactic_id: "urgency.deadline", confidence: 0.8, evidence: ["now"] }],
+      usage: { input: 120, output: 40, cacheRead: 3000, cacheWrite: 0 },
     });
     const params = calls[0]!;
     expect(params.model).toBe("claude-opus-5-5");
@@ -42,7 +50,16 @@ describe("AnthropicProvider", () => {
       { type: "text", text: "SYSTEM", cache_control: { type: "ephemeral" } },
     ]);
     expect(params.messages).toEqual([{ role: "user", content: "USER" }]);
-    expect((params.output_config as { format: unknown }).format).toBeDefined();
+    const config = params.output_config as { format: unknown; effort: string };
+    expect(config.format).toBeDefined();
+    expect(config.effort).toBe("low");
+  });
+
+  it("omits the server-side fallback on Haiku, which doesn't support it", async () => {
+    const { client, calls } = stubClient({ stop_reason: "end_turn", parsed_output: { hits: [] } });
+    await new AnthropicProvider({ client, model: "claude-haiku-5-5" }).classify(prompt);
+    expect(calls[0]).not.toHaveProperty("fallbacks");
+    expect(calls[0]).not.toHaveProperty("betas");
   });
 
   it("reports refusals instead of throwing", async () => {
@@ -51,7 +68,7 @@ describe("AnthropicProvider", () => {
       stop_details: { category: "cyber" },
       parsed_output: null,
     });
-    expect(await new AnthropicProvider({ client }).classify(prompt)).toEqual({
+    expect(await new AnthropicProvider({ client }).classify(prompt)).toMatchObject({
       status: "refused",
       detail: "cyber",
     });

@@ -116,7 +116,14 @@ export const ProvenanceSchema = z.object({
   provider: z.string(),
   model: z.string().nullable(),
   promptHash: z.string().nullable(),
-  llmStatus: z.enum(["not_called", "skipped_prefilter", "ok", "refused", "error"]),
+  llmStatus: z.enum([
+    "not_called",
+    "skipped_prefilter",
+    "skipped_budget",
+    "ok",
+    "refused",
+    "error",
+  ]),
 });
 export type Provenance = z.infer<typeof ProvenanceSchema>;
 

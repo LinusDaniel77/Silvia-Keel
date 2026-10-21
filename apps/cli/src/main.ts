@@ -3,18 +3,34 @@ import { readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
-import { analyze, parseEml } from "@shield/engine";
+import { analyze, parseEml, promptFor } from "@shield/engine";
 import {
   checkGate,
   DEFAULT_CORPUS,
+  estimateRun,
   loadCorpus,
   renderReport,
   runEval,
+  selectByTags,
+  type ApiUsageSummary,
   type Gate,
 } from "@shield/eval";
-import { AnthropicProvider, type LlmProvider } from "@shield/llm";
+import {
+  AnthropicProvider,
+  BudgetedProvider,
+  classifyInBatch,
+  createAnthropicClient,
+  DEFAULT_ANTHROPIC_MODEL,
+  estimateCostUsd,
+  hasAnthropicCredentials,
+  PrecomputedProvider,
+  type LlmProvider,
+} from "@shield/llm";
+import { z } from "zod";
 import { ActionKindSchema, type Analysis, type ShieldRequestInput } from "@shield/shared";
 import { lintLibrary, loadLibrary, writeLock } from "@shield/tactics";
+
+const EffortSchema = z.enum(["low", "medium", "high"]);
 
 const GATE_FILE = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -25,14 +41,20 @@ const USAGE = `Manipulation Shield CLI
 
   shield analyze <file.eml|file.txt|file.json> [--provider none|anthropic] [--action <kind>]
                  [--amount <n>] [--org-domain <d>]... [--known-domain <d>]... [--json]
-  shield eval    [--provider none|anthropic] [--corpus <file.jsonl>] [--out <report.md>]
+  shield eval    [--provider none|anthropic] [--corpus <file.jsonl>] [--tags a,b] [--out <report.md>]
                  [--limit <n>] [--concurrency <n>] [--gate]
+                 paid runs only: [--model <id>] [--effort low|medium|high] [--estimate]
+                                 [--max-usd <n>] [--batch]
   shield tactics lint
   shield tactics lock
 
 --provider none (default) runs the deterministic rules only, offline.
 --provider anthropic adds the Claude tactic classifier (needs Anthropic credentials;
-  model from SHIELD_MODEL, default claude-opus-5-5).`;
+  model from --model or SHIELD_MODEL, default claude-opus-5-5; effort defaults to low).
+--estimate prints the call count and cost estimate and makes no API call.
+--max-usd caps spend: synchronous runs stop calling once the cap would be crossed; batch runs
+  refuse to submit if the estimate exceeds it. --batch uses the Batch API at half price.
+--tags runs only items with those tags (injection items bring their clean twin).`;
 
 function providerFrom(name: string | undefined): LlmProvider | undefined {
   if (!name || name === "none") return undefined;
@@ -150,26 +172,101 @@ async function main(argv: string[]): Promise<number> {
       args: rest,
       options: {
         provider: { type: "string" },
+        model: { type: "string" },
+        effort: { type: "string" },
         corpus: { type: "string" },
+        tags: { type: "string" },
         out: { type: "string" },
         limit: { type: "string" },
         concurrency: { type: "string" },
+        estimate: { type: "boolean" },
+        "max-usd": { type: "string" },
+        batch: { type: "boolean" },
         gate: { type: "boolean" },
       },
     });
+    const library = loadLibrary();
     let corpus = loadCorpus(values.corpus ?? DEFAULT_CORPUS);
+    if (values.tags)
+      corpus = selectByTags(
+        corpus,
+        values.tags.split(",").map((t) => t.trim()),
+      );
     if (values.limit) corpus = corpus.slice(0, Number(values.limit));
-    const provider = providerFrom(values.provider);
+
+    const paid = values.provider === "anthropic";
+    if (!paid && (values.estimate || values.batch || values["max-usd"] || values.model))
+      throw new Error("--estimate, --batch, --max-usd and --model need --provider anthropic");
+    if (values.provider && !["none", "anthropic"].includes(values.provider))
+      throw new Error(`unknown provider "${values.provider}" (expected none or anthropic)`);
+    const model = values.model ?? process.env.SHIELD_MODEL ?? DEFAULT_ANTHROPIC_MODEL;
+    const effort = EffortSchema.parse(values.effort ?? "low");
+    const maxUsd = values["max-usd"] !== undefined ? Number(values["max-usd"]) : undefined;
+    const batch = Boolean(values.batch);
+
+    if (paid) {
+      const est = estimateRun(corpus, library, model, { batch });
+      const line = `${est.items} items, ${est.llmCalls} classifier calls on ${model}${batch ? " (batch, half price)" : ""}: estimated $${est.usd.toFixed(4)} (~${est.usage.input + est.usage.cacheRead + est.usage.cacheWrite} input and ~${est.usage.output} output tokens; output allowance is pessimistic)`;
+      if (values.estimate) {
+        console.log(`Estimate only, no API calls made. ${line}`);
+        return 0;
+      }
+      console.log(line);
+      if (!hasAnthropicCredentials())
+        throw new Error(
+          "no Anthropic credentials (set KEEL_ANTHROPIC_API_KEY or ANTHROPIC_API_KEY; in a cloud session, start a new session after adding it)",
+        );
+      if (batch && maxUsd !== undefined && est.usd > maxUsd)
+        throw new Error(
+          `estimated $${est.usd.toFixed(4)} exceeds --max-usd ${maxUsd}; nothing was submitted`,
+        );
+    }
+
+    let provider: LlmProvider | undefined;
+    let budget: BudgetedProvider | undefined;
+    let apiUsage: ApiUsageSummary | undefined;
+    if (paid && batch) {
+      const prompts = corpus.flatMap((i) => promptFor(i.request, library, model) ?? []);
+      const run = await classifyInBatch(createAnthropicClient(), prompts, {
+        model,
+        effort,
+        onProgress: (s) => console.log(s),
+      });
+      provider = new PrecomputedProvider("anthropic-batch", model, run.results);
+      apiUsage = {
+        model,
+        batch: true,
+        calls: run.results.size,
+        usage: run.usage,
+        estimatedUsd: estimateCostUsd(run.usage, model, { batch: true }),
+        skippedForBudget: 0,
+      };
+    } else if (paid) {
+      budget = new BudgetedProvider(new AnthropicProvider({ model, effort }), maxUsd ?? Infinity);
+      provider = budget;
+    }
+
     const result = await runEval(corpus, {
-      library: loadLibrary(),
+      library,
       provider,
       concurrency: Number(values.concurrency ?? (provider ? 4 : 1)),
     });
+    if (budget)
+      apiUsage = {
+        model,
+        batch: false,
+        calls: result.results.filter((r) =>
+          ["ok", "refused", "error"].includes(r.analysis.provenance.llmStatus),
+        ).length,
+        usage: budget.usage,
+        estimatedUsd: budget.spentUsd,
+        skippedForBudget: budget.skipped,
+      };
     const gate: Gate | undefined = values.gate
       ? (JSON.parse(readFileSync(GATE_FILE, "utf8")) as Gate)
       : undefined;
     const failures = gate ? checkGate(result, gate) : undefined;
-    const report = renderReport(result, { gateFailures: failures });
+    const report = renderReport(result, { gateFailures: failures, apiUsage });
     if (values.out) {
       writeFileSync(values.out, report);
       console.log(`report written to ${values.out}`);
@@ -178,6 +275,8 @@ async function main(argv: string[]): Promise<number> {
     console.log(
       `PAUSE precision ${f(result.pause.precision.value)} · catch rate ${f(result.pause.recall.value)} · false-alarm rate ${f(result.pause.falseAlarmRate.value)} · WARN+ catch rate ${f(result.warnOrAbove.recall.value)} · injection violations ${result.injectionPairs.violations.length}`,
     );
+    if (apiUsage)
+      console.log(`API: ${apiUsage.calls} calls, estimated $${apiUsage.estimatedUsd.toFixed(4)}`);
     if (failures?.length) {
       for (const x of failures) console.error(`gate: ${x}`);
       return 1;

@@ -20,8 +20,18 @@ export interface TacticPrompt {
   hash: string;
 }
 
+/** Token counts the API reported for a call (same shape as pricing.TokenUsage). */
+export interface ProviderUsage {
+  input: number;
+  output: number;
+  cacheRead: number;
+  cacheWrite: number;
+}
+
 export type ProviderResult =
-  { status: "ok"; hits: RawHits["hits"] } | { status: "refused" | "error"; detail: string };
+  | { status: "ok"; hits: RawHits["hits"]; usage?: ProviderUsage }
+  | { status: "refused" | "error"; detail: string; usage?: ProviderUsage }
+  | { status: "skipped_budget"; detail: string; usage?: undefined };
 
 export interface LlmProvider {
   readonly id: string;
