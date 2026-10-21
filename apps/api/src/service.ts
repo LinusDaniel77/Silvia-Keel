@@ -460,11 +460,56 @@ export async function getRequest(tx: Db, id: string) {
   ).rows;
   const verifications = (
     await tx.query(
-      "SELECT id, status, script, outcome, channel_used, created_at, completed_at FROM verifications WHERE request_id = $1 ORDER BY created_at",
+      "SELECT id, kind, status, script, outcome, channel_used, created_at, completed_at FROM verifications WHERE request_id = $1 ORDER BY created_at",
       [id],
     )
   ).rows;
-  return { request: req, artifacts, analyses, verifications };
+  // The audit trail is the one place a person reference (actor_ref) is shown.
+  const auditEvents = (
+    await tx.query(
+      "SELECT event, actor_ref, reason, created_at FROM audit_events WHERE request_id = $1 ORDER BY created_at",
+      [id],
+    )
+  ).rows;
+  return { request: req, artifacts, analyses, verifications, auditEvents };
+}
+
+/**
+ * After-the-fact label for a checked request, mainly for shadow mode where nothing is held or
+ * verified. It never changes a held request's status; that still needs complete or override.
+ */
+export async function reviewRequest(
+  tx: Db,
+  tenantId: string,
+  requestId: string,
+  outcome: "legitimate" | "attack" | "inconclusive",
+  actorRef: string,
+) {
+  const analysis = (
+    await tx.query<{ id: string }>(
+      "SELECT id FROM analyses WHERE request_id = $1 ORDER BY created_at DESC LIMIT 1",
+      [requestId],
+    )
+  ).rows[0];
+  if (!analysis) {
+    const exists = (await tx.query("SELECT 1 FROM requests WHERE id = $1", [requestId])).rows
+      .length;
+    throw exists
+      ? new Conflict("request has not been checked yet")
+      : new NotFound("request not found");
+  }
+  const { rows } = await tx.query<{ id: string }>(
+    `INSERT INTO verifications (tenant_id, request_id, analysis_id, kind, status, script, outcome, channel_used, completed_at)
+     VALUES ($1, $2, $3, 'review', 'completed', 'Reviewed after the fact.', $4, 'review', now()) RETURNING id`,
+    [tenantId, requestId, analysis.id, outcome],
+  );
+  await audit(tx, tenantId, {
+    requestId,
+    verificationId: rows[0]!.id,
+    actorRef,
+    event: `review_${outcome}`,
+  });
+  return { requestId, reviewId: rows[0]!.id, outcome };
 }
 
 /**

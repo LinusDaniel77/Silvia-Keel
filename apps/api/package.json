@@ -10,9 +10,7 @@
     "@shield/shared": "workspace:*",
     "@shield/tactics": "workspace:*",
     "fastify": "5.12.5",
-    "zod": "3.25.76"
-  },
-  "devDependencies": {
+    "zod": "3.25.76",
     "@shield/eval": "workspace:*"
   }
 }

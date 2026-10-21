@@ -356,6 +356,15 @@ Built:
   - Outcomes as labels, audited overrides, and label export for the eval. See `docs/api.md`.
 - **Paid-eval cost controls:** `--estimate` (free), `--max-usd`, `--batch` (half price), `--tags`, and low effort by default. The cheap first look is estimated at about $0.05 on Haiku 5.5.
 
+**M4 console (built):** served by the API at `/console` (see `docs/api.md`).
+
+- Overview with per-workflow pause precision, false-alarm rate and catch rate, each with confidence intervals.
+- Catch log and top tactics.
+- Request triage with evidence highlighting, verify, override and after-the-fact review.
+- Shadow/enforce switching, gated on reviewed false-alarm rates.
+- No per-person views.
+- `--seed-demo` fills it for partner walk-throughs.
+
 The paid eval is deliberately deferred for budget. Next free steps: native connectors once design partners pick their systems, and the M4 console.
 
 Next:

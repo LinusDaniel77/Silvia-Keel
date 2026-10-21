@@ -41,6 +41,9 @@ importers:
       '@shield/engine':
         specifier: workspace:*
         version: link:../../packages/engine
+      '@shield/eval':
+        specifier: workspace:*
+        version: link:../../packages/eval
       '@shield/llm':
         specifier: workspace:*
         version: link:../../packages/llm
@@ -56,10 +59,6 @@ importers:
       zod:
         specifier: 3.25.76
         version: 3.25.76
-    devDependencies:
-      '@shield/eval':
-        specifier: workspace:*
-        version: link:../../packages/eval
 
   apps/cli:
     dependencies:

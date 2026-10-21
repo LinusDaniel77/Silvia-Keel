@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Manipulation Shield Console</title>
+    <link rel="stylesheet" href="/console/styles.css" />
+    <script src="/console/app.js" defer></script>
+  </head>
+  <body>
+    <header class="top">
+      <div class="brand">
+        <h1>Manipulation Shield</h1>
+        <span class="sub">Security console</span>
+      </div>
+      <nav id="nav" hidden>
+        <a href="#/overview" data-route="overview">Overview</a>
+        <a href="#/requests" data-route="requests">Requests</a>
+        <a href="#/workflows" data-route="workflows">Workflows</a>
+        <button type="button" id="signout" class="link">Sign out</button>
+      </nav>
+    </header>
+    <div id="demo" class="banner info" hidden>
+      Demo data: synthetic requests from the eval corpus, labelled from the corpus. Not customer
+      data.
+    </div>
+    <main id="view" class="wrap"></main>
+    <footer class="foot wrap">
+      No per-person views by design: requests are analyzed, not employees. Pilot sign-in uses an API
+      key; SSO comes later.
+    </footer>
+  </body>
+</html>

@@ -1,10 +1,14 @@
 import { tenantForApiKey, withTenant, type Db } from "@shield/db";
 import { parseEml } from "@shield/engine";
 import type { LlmProvider } from "@shield/llm";
-import { ActionKindSchema, ActionSchema, ArtifactSchema } from "@shield/shared";
+import { ActionKindSchema, ActionSchema, ArtifactSchema, DecisionSchema } from "@shield/shared";
 import type { TacticLibrary } from "@shield/tactics";
 import Fastify, { type FastifyInstance, type FastifyRequest } from "fastify";
+import { readFileSync } from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { z } from "zod";
+import { listRequests, summary } from "./reports.ts";
 import {
   checkApproval,
   completeVerification,
@@ -14,6 +18,7 @@ import {
   ingestArtifact,
   NotFound,
   overrideVerification,
+  reviewRequest,
   setWorkflowMode,
   upsertContacts,
   type NewArtifact,
@@ -83,6 +88,30 @@ const ContactsBody = z.object({
     .max(10_000),
 });
 const WorkflowBody = z.object({ mode: z.enum(["shadow", "enforce"]) });
+const ReviewBody = z.object({ outcome: z.enum(["legitimate", "attack", "inconclusive"]) });
+const ListQuery = z.object({
+  decision: DecisionSchema.optional(),
+  status: z.enum(["open", "held", "released", "blocked"]).optional(),
+  mode: z.enum(["shadow", "enforce"]).optional(),
+  limit: z.coerce.number().int().min(1).max(200).default(50),
+  before: z.string().datetime({ offset: true }).optional(),
+});
+const SummaryQuery = z.object({ days: z.coerce.number().int().min(1).max(365).default(30) });
+
+/** The console: static files from an allowlist, never a path lookup. */
+const CONSOLE_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../public/console");
+const CONSOLE_FILES: Record<string, [string, string]> = {
+  "/console": ["index.html", "text/html; charset=utf-8"],
+  "/console/app.js": ["app.js", "text/javascript; charset=utf-8"],
+  "/console/styles.css": ["styles.css", "text/css; charset=utf-8"],
+};
+const CONSOLE_HEADERS = {
+  "content-security-policy":
+    "default-src 'self'; style-src 'self'; script-src 'self'; connect-src 'self'; frame-ancestors 'none'",
+  "x-content-type-options": "nosniff",
+  "referrer-policy": "no-referrer",
+  "cache-control": "no-store",
+};
 const IdParam = z.object({ id: z.string().uuid() });
 
 class HttpError extends Error {
@@ -122,9 +151,11 @@ export interface AppDeps {
   library: TacticLibrary;
   /** Present only when the LLM is explicitly enabled. */
   provider?: LlmProvider;
+  /** Marks the console as showing seeded demo data. */
+  demo?: boolean;
 }
 
-export function buildApp({ db, library, provider }: AppDeps): FastifyInstance {
+export function buildApp({ db, library, provider, demo = false }: AppDeps): FastifyInstance {
   const app = Fastify({ logger: false, bodyLimit: 1024 * 1024 });
   app.decorateRequest("tenantId", "");
 
@@ -151,7 +182,12 @@ export function buildApp({ db, library, provider }: AppDeps): FastifyInstance {
   const scoped = <T>(req: FastifyRequest, fn: (tx: Db) => Promise<T>) =>
     withTenant(db, req.tenantId, fn);
 
-  app.get("/healthz", async () => ({ ok: true, libraryVersion: library.manifest.version }));
+  app.get("/healthz", async () => ({
+    ok: true,
+    demo,
+    libraryVersion: library.manifest.version,
+    tactics: Object.fromEntries(library.tactics.map((t) => [t.id, t.name])),
+  }));
 
   app.post("/v1/artifacts", async (req, reply) => {
     const body = parse(ArtifactBody, req.body);
@@ -202,6 +238,31 @@ export function buildApp({ db, library, provider }: AppDeps): FastifyInstance {
   app.get("/v1/requests/:id", async (req) => {
     const { id } = parse(IdParam, req.params);
     return scoped(req, (tx) => getRequest(tx, id));
+  });
+
+  for (const [url, [file, type]] of Object.entries(CONSOLE_FILES))
+    app.get(url, async (_req, reply) =>
+      reply
+        .headers(CONSOLE_HEADERS)
+        .type(type)
+        .send(readFileSync(path.join(CONSOLE_DIR, file), "utf8")),
+    );
+
+  app.get("/v1/requests", async (req) => {
+    const q = parse(ListQuery, req.query);
+    return scoped(req, (tx) => listRequests(tx, library, q));
+  });
+
+  app.get("/v1/reports/summary", async (req) => {
+    const { days } = parse(SummaryQuery, req.query);
+    return scoped(req, (tx) => summary(tx, library, days));
+  });
+
+  app.post("/v1/requests/:id/review", async (req) => {
+    const { id } = parse(IdParam, req.params);
+    const { outcome } = parse(ReviewBody, req.body);
+    const actor = actorOf(req);
+    return scoped(req, (tx) => reviewRequest(tx, req.tenantId, id, outcome, actor));
   });
 
   app.get("/v1/labels/export", async (req, reply) => {

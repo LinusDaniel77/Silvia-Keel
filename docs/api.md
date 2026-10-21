@@ -23,6 +23,9 @@ trail.
 | `PUT /v1/workflows/:actionKind`       | `{ mode: shadow\|enforce }`. Audited.                                                                                                                                                                                                                                                                      |
 | `GET /v1/requests/:id`                | The request with its messages (purged bodies flagged), analyses and verifications.                                                                                                                                                                                                                         |
 | `GET /v1/labels/export`               | Verified requests as eval-corpus JSONL (`source: partner`).                                                                                                                                                                                                                                                |
+| `POST /v1/requests/:id/review`        | `{ outcome }`. After-the-fact label, mainly for shadow mode. It doesn't hold or release anything. Needs `x-shield-actor`.                                                                                                                                                                                  |
+| `GET /v1/requests`                    | `?decision=&status=&mode=&limit=&before=`. Newest first, with the latest decision, tactics, label and verification.                                                                                                                                                                                        |
+| `GET /v1/reports/summary`             | `?days=30`. Per workflow: checks, decisions, would-hold and held counts, and labelled pause precision, false-alarm rate and catch rate (with Wilson 95% CIs). Also top tactics, the catch log and the median time to verify.                                                                               |
 
 ## How a check works
 
@@ -42,6 +45,28 @@ trail.
    - Contact details inside the request are never used.
    - With no contact on file, the verification is `needs_contact`; nothing is invented.
 5. **Label.** The verification outcome is the ground-truth label for the eval: the flywheel.
+
+## Console
+
+`pnpm api` serves the security console at `/console`, and `pnpm api --seed-demo` fills it with
+48 synthetic requests from the eval corpus, banner-marked as demo data.
+
+- **Overview:** checks, pauses, confirmed attacks, attacks stopped while held, and the median
+  time to verify. A per-workflow accuracy table, top tactics, and the catch log.
+- **Requests:** filter and open any request to see its messages with evidence highlighted, its
+  analyses, and its audit trail. From there you can record a verification outcome, override
+  (a reason is required), or review it after the fact.
+- **Workflows:** switch between shadow and enforce. Switching to enforce shows the reviewed
+  false-alarm rate, and warns below 20 labels.
+
+What the console deliberately doesn't do:
+
+- **No per-person views.** It shows no per-employee or per-recipient views or rankings. The audit
+  trail on a single request is the only place a person reference (`actor_ref`) appears; tests
+  check that list and summary responses never contain it.
+- **Pilot sign-in only.** Sign-in takes the tenant API key plus your id for the audit trail, held
+  in that browser tab only. SSO and roles replace this in M6.
+- **Strict CSP.** The page has no inline scripts or styles.
 
 ## Tenancy and data
 
@@ -63,4 +88,3 @@ trail.
 - Native connectors: Microsoft 365, Slack, Teams, and the AP and help-desk systems (M2, chosen by
   design partners).
 - An async queue for slow LLM calls.
-- The web console (M4).

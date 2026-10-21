@@ -12,6 +12,7 @@ import {
 import { AnthropicProvider, hasAnthropicCredentials } from "@shield/llm";
 import { loadLibrary } from "@shield/tactics";
 import { buildApp } from "./app.ts";
+import { seedDemo } from "./seed.ts";
 import { upsertContacts } from "./service.ts";
 
 /**
@@ -21,7 +22,13 @@ import { upsertContacts } from "./service.ts";
  * The LLM is off unless SHIELD_LLM=on and credentials exist: every classifier call costs money.
  */
 async function main() {
-  const { values } = parseArgs({ options: { port: { type: "string" }, host: { type: "string" } } });
+  const { values } = parseArgs({
+    options: {
+      port: { type: "string" },
+      host: { type: "string" },
+      "seed-demo": { type: "boolean" },
+    },
+  });
   const db: Db = process.env.DATABASE_URL
     ? openPostgres(process.env.DATABASE_URL)
     : await openPglite();
@@ -50,12 +57,19 @@ async function main() {
       ]),
     );
     console.log(`In-memory database with a demo tenant. API key (shown once): ${key}`);
+    if (values["seed-demo"]) {
+      const { requests } = await seedDemo(db, tenantId, loadLibrary());
+      console.log(`Seeded ${requests} synthetic demo requests (labels from the eval corpus).`);
+    }
+  } else if (values["seed-demo"]) {
+    throw new Error("--seed-demo only works with the in-memory database, never with DATABASE_URL");
   }
 
   const llmOn = process.env.SHIELD_LLM === "on" && hasAnthropicCredentials();
   const app = buildApp({
     db,
     library: loadLibrary(),
+    demo: Boolean(values["seed-demo"]),
     ...(llmOn ? { provider: new AnthropicProvider() } : {}),
   });
 

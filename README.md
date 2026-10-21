@@ -57,7 +57,8 @@ scoring table for each conversation. See [`copilot-data/README.md`](copilot-data
 ## API: the approval gate
 
 ```sh
-pnpm api   # in-memory Postgres with a demo tenant; prints an API key
+pnpm api               # in-memory Postgres with a demo tenant; prints an API key
+pnpm api --seed-demo   # same, plus 48 synthetic requests; console at http://127.0.0.1:4180/console
 ```
 
 An AP or help-desk system calls `POST /v1/approvals/check` before releasing a payment, a vendor
@@ -68,6 +69,9 @@ bank change or a reset.
 - **Enforce mode** holds a paused request until someone verifies it through a contact from the
   vendor master or HR directory, never one taken from the message.
 - **Labels.** Verification outcomes become eval labels.
+- **Console** (`/console`): the security team sees what would have been paused, how often that
+  was wrong (with confidence intervals), and what it caught. They can review or verify requests
+  and switch workflows to enforce.
 
 See [`docs/api.md`](docs/api.md).
 
