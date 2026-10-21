@@ -14,6 +14,7 @@
     "test": "vitest run",
     "shield": "tsx apps/cli/src/main.ts",
     "demo": "tsx apps/demo/src/server.ts",
+    "api": "tsx apps/api/src/server.ts",
     "copilot:first-test": "tsx apps/copilot/src/main.ts",
     "check": "pnpm typecheck && pnpm lint && pnpm format:check && pnpm test && pnpm shield tactics lint && pnpm shield eval --provider none --out eval-report.md --gate"
   },

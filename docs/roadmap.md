@@ -342,6 +342,22 @@ Built:
 
 Not yet run: the live Claude eval and the copilot test itself. Both need Anthropic credentials visible in the session.
 
+## M2/M3 core status
+
+Built:
+
+- **`packages/db`:**
+  - Postgres schema with row-level security for each tenant, migrations, PGlite for tests and local runs, and retention purge.
+  - No person columns (tested).
+- **`packages/engine/src/correlate.ts`:** joins messages and approvals into one request.
+- **`apps/api`:** the approval gate.
+  - Shadow and enforce modes.
+  - Verification only through system-of-record contacts.
+  - Outcomes as labels, audited overrides, and label export for the eval. See `docs/api.md`.
+- **Paid-eval cost controls:** `--estimate` (free), `--max-usd`, `--batch` (half price), `--tags`, and low effort by default. The cheap first look is estimated at about $0.05 on Haiku 5.5.
+
+The paid eval is deliberately deferred for budget. Next free steps: native connectors once design partners pick their systems, and the M4 console.
+
 Next:
 
 1. Run `pnpm shield eval --provider anthropic` under zero-data-retention terms. Record the numbers in `docs/eval-methodology.md`, paying particular attention to the paraphrase slice and the two false alarms.

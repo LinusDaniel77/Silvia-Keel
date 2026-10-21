@@ -54,6 +54,23 @@ This is the roadmap's one-afternoon test. Put 5 real conversations and your own 
 `copilot-data/` (git-ignored). The run writes a report with Claude's read next to yours and a
 scoring table for each conversation. See [`copilot-data/README.md`](copilot-data/README.md).
 
+## API: the approval gate
+
+```sh
+pnpm api   # in-memory Postgres with a demo tenant; prints an API key
+```
+
+An AP or help-desk system calls `POST /v1/approvals/check` before releasing a payment, a vendor
+bank change or a reset.
+
+- **Correlation.** The gate joins the request to the emails and chats behind it and analyzes them.
+- **Shadow mode** (the default) records the decision without holding anything.
+- **Enforce mode** holds a paused request until someone verifies it through a contact from the
+  vendor master or HR directory, never one taken from the message.
+- **Labels.** Verification outcomes become eval labels.
+
+See [`docs/api.md`](docs/api.md).
+
 ## How a request is judged
 
 ```
@@ -81,6 +98,8 @@ artifacts (email, chat, call note, approval event) + the action they push for
 | `apps/cli`         | `shield` command                                                                     |
 | `apps/demo`        | Local paste-a-request demo (`pnpm demo`)                                             |
 | `apps/copilot`     | Copilot first-test harness (`pnpm copilot:first-test`)                               |
+| `apps/api`         | Approval-gate API (`pnpm api`)                                                       |
+| `packages/db`      | Postgres schema, migrations, tenant isolation, retention                             |
 | `docs/`            | Roadmap, principles, tactic authoring, eval methodology, threat model, data handling |
 
 ## Current numbers, honestly
@@ -89,6 +108,7 @@ artifacts (email, chat, call note, approval event) + the action they push for
 | --------------------------------- | --------------- | ---------------- | --------------------------------- |
 | Synthetic seed corpus (302 items) | 98%             | 55%              | 4%                                |
 
-The rules are precise but don't generalize to new wording; that's the LLM classifier's job, and
-its first measured run is the next step. See
+The rules are precise but don't generalize to new wording; that's the LLM classifier's job. Its
+first measured run is deferred for budget. When it runs, it can be priced first for free and
+capped, and the cheap first look is about $0.05 (see the eval methodology). See
 [`docs/eval-methodology.md`](docs/eval-methodology.md) for what these numbers can and cannot claim.

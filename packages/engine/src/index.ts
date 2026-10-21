@@ -5,3 +5,4 @@ export * from "./features.ts";
 export * from "./normalize.ts";
 export * from "./prefilter.ts";
 export * from "./rules.ts";
+export * from "./correlate.ts";
