@@ -326,6 +326,22 @@ Deviations from the plan, and why:
 - **`packages/db` deferred to M2.** Nothing persists until connectors exist.
 - **One LLM pass on `claude-opus-5-5`, not a triage/full-read cascade.** Measure the single model at different effort levels with the eval before adding a cascade. A cascade costs prompt-cache reuse and adds a second failure mode.
 
+## M1 status
+
+Built:
+
+- **`apps/demo`:** a local paste-a-request web app.
+  - Server: `node:http` with no extra dependencies, a strict CSP, a 100 KB body limit and an allowlisted static file set. It never logs bodies.
+  - Page: evidence highlighting, four examples, light and dark themes, and a phone-width layout.
+  - Tests run against a real server on an ephemeral port.
+- **`apps/copilot`:** the first-test harness. It reads `copilot-data/*/conversation.txt` and `my-read.md` and asks Claude for a structured read.
+  - The read covers goals, leverage, feelings, alternate readings, tactics by each side (self-check), honest pushback and a next message.
+  - Tactic claims without a verbatim quote are dropped.
+  - Output is a side-by-side report with a scoring table.
+  - Principle 6 holds structurally: the output schema has no field for the other person's weak spots. Tests check both the schema and the prompt.
+
+Not yet run: the live Claude eval and the copilot test itself. Both need Anthropic credentials visible in the session.
+
 Next:
 
 1. Run `pnpm shield eval --provider anthropic` under zero-data-retention terms. Record the numbers in `docs/eval-methodology.md`, paying particular attention to the paraphrase slice and the two false alarms.

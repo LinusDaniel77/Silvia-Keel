@@ -51,6 +51,42 @@ importers:
         specifier: workspace:*
         version: link:../../packages/tactics
 
+  apps/copilot:
+    dependencies:
+      '@anthropic-ai/sdk':
+        specifier: 0.132.1
+        version: 0.132.1(zod@3.25.76)
+      '@shield/llm':
+        specifier: workspace:*
+        version: link:../../packages/llm
+      '@shield/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
+      '@shield/tactics':
+        specifier: workspace:*
+        version: link:../../packages/tactics
+      zod:
+        specifier: 3.25.76
+        version: 3.25.76
+
+  apps/demo:
+    dependencies:
+      '@shield/engine':
+        specifier: workspace:*
+        version: link:../../packages/engine
+      '@shield/llm':
+        specifier: workspace:*
+        version: link:../../packages/llm
+      '@shield/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
+      '@shield/tactics':
+        specifier: workspace:*
+        version: link:../../packages/tactics
+      zod:
+        specifier: 3.25.76
+        version: 3.25.76
+
   packages/engine:
     dependencies:
       '@shield/llm':

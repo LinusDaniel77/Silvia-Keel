@@ -6,6 +6,10 @@ export default tseslint.config(
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
+    files: ["apps/demo/public/**/*.js"],
+    languageOptions: { globals: { document: "readonly", fetch: "readonly", window: "readonly" } },
+  },
+  {
     rules: {
       "@typescript-eslint/no-unused-vars": [
         "error",

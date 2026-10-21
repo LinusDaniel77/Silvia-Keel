@@ -27,6 +27,32 @@ rules. It needs Anthropic credentials; the model comes from `SHIELD_MODEL` and d
 `claude-opus-5-5`. Do not send real partner data without zero-data-retention terms; see
 [`docs/data-handling.md`](docs/data-handling.md).
 
+## Demo for design partners
+
+```sh
+pnpm demo        # http://127.0.0.1:4173, local only
+```
+
+Paste a past incident (a raw email with headers, plain text, or a request JSON), say what it asks
+for, and see the decision. The page shows the tactics, one-line explanations and the evidence
+highlighted in the message. Four built-in examples cover a vendor bank-change attack, a real CFO's
+urgent request, an injection attempt and an email-plus-call chain.
+
+- Nothing is stored and request bodies are never logged.
+- The server binds to localhost and has no authentication, so don't expose it.
+- With Anthropic credentials set, a "Use Claude" toggle adds the classifier. The pasted text then
+  goes to Anthropic.
+
+## Copilot first test
+
+```sh
+pnpm copilot:first-test   # reads copilot-data/<conversation>/{conversation.txt,my-read.md}
+```
+
+This is the roadmap's one-afternoon test. Put 5 real conversations and your own read of each in
+`copilot-data/` (git-ignored). The run writes a report with Claude's read next to yours and a
+scoring table for each conversation. See [`copilot-data/README.md`](copilot-data/README.md).
+
 ## How a request is judged
 
 ```
@@ -52,6 +78,8 @@ artifacts (email, chat, call note, approval event) + the action they push for
 | `packages/eval`    | Seed corpus, eval harness, metrics, report, principle tests                          |
 | `packages/shared`  | Domain types (`ShieldRequest`, `Analysis`, …)                                        |
 | `apps/cli`         | `shield` command                                                                     |
+| `apps/demo`        | Local paste-a-request demo (`pnpm demo`)                                             |
+| `apps/copilot`     | Copilot first-test harness (`pnpm copilot:first-test`)                               |
 | `docs/`            | Roadmap, principles, tactic authoring, eval methodology, threat model, data handling |
 
 ## Current numbers, honestly
